@@ -7,6 +7,7 @@
     'use strict';
 
     var getStyle = (function () {
+
         var getUnitValue = function (value) {
             var UNIT_VALUE_PATTERN = /([\d\.\-]+)([^\d]+)/;
             if (value === undefined) {
@@ -27,30 +28,39 @@
             };
         };
 
-        var unitConverter = function (elem, prop, unit) {
-            var elemPropValue = $(elem).css(prop);
-            elemPropValue = (!elemPropValue || elemPropValue === 'auto') ?
-                            0 : parseFloat(elemPropValue);
+        var unitConverter = function (elem, prop, finalUnit, propValue) {
+            propValue = propValue || $(elem).css(prop);
+            propValue = propValue === 'auto' ? 0 : propValue;
 
-            if (unit === 'px') {
-                return elemPropValue + 'px';
+            var originUnit = getUnitValue(propValue).unit;
+            //console.log(getUnitValue(propValue))
+
+            if (prop !== 'opacity') {
+                originUnit = originUnit || 'px';
             }
 
-            var div = $('<div style="position: absolute;border-style: solid;"></div>');
-            $(div)
-                .appendTo($(elem).offsetParent())
-                .css(prop, 1 + unit);
+            if (originUnit === finalUnit) {
+                return propValue;
+            }
 
-            var scale = parseFloat($(div).css(prop));
+            var $div_1 = $('<div style="position: absolute;border-style: solid;"></div>');
+            var $div_2 = $('<div style="position: absolute;border-style: solid;"></div>');
+            var $parent = $(elem).offsetParent();
+            $div_1.appendTo($parent).css(prop, 1 + originUnit);
+            $div_2.appendTo($parent).css(prop, 1 + finalUnit);
+
+            var scale = parseFloat($div_1.css(prop)) / parseFloat($div_2.css(prop));
+            //console.log(scale);
 
             if (isNaN(scale)) {
-                //scale = 1;
-                throw new Error('error get value of ' + prop + ' with result ' + scale);
+                console.log(elem);
+                throw new Error('error get value of ' + prop );
             }
-            // console.log(scale, elemPropValue);
-            $(div).remove();
+            //console.log(scale, propValue);
+            $div_1.remove();
+            $div_2.remove();
 
-            return elemPropValue / scale + unit;
+            return parseFloat(propValue) * scale + finalUnit;
         };
 
         var getStyle = function (elem, beginStyle, finalStyle, percent) {
@@ -65,13 +75,17 @@
                     finalFrame.unit = finalFrame.unit || 'px';
                 }
 
-                if (!beginStyle[prop] ||
-                    getUnitValue(beginStyle[prop]).unit !== finalFrame.unit) {
+                if (!beginStyle[prop]) {
                     // set begin value
                     beginStyle[prop] = unitConverter(elem, prop, finalFrame.unit);
                 }
 
                 var beginFrame = getUnitValue(beginStyle[prop]);
+
+                if (beginFrame.unit !== finalFrame.unit) {
+                    beginStyle[prop] = unitConverter(elem, prop, finalFrame.unit, beginStyle[prop]);
+                }
+
                 var changeValue = finalFrame.value - beginFrame.value;
                 var nextFrameValue = percent * changeValue + beginFrame.value;
                 style[prop] = nextFrameValue + finalFrame.unit;
@@ -95,6 +109,14 @@
 
     var expandCSS = function(style) {
         // todo: background-position rendering
+
+        for (var name in style) {
+            if (name !== 'opacity' &&
+                typeof style[name] === 'number') {
+                style[name] += 'px';
+            }
+        }
+
         var prop_1 = ['margin', 'padding'];
         var prop_2 = 'border-width';
         var prop_3 = 'border-radius';
@@ -114,7 +136,7 @@
                                              eachValue_1[1] ||
                                              eachValue_1[0];
                 $.extend(style, expanded_1);
-                delete  style[prop];
+                delete style[prop];
             }
         }
 
@@ -133,7 +155,7 @@
                                                      eachValue_2[1] ||
                                                      eachValue_2[0];
             $.extend(style, expanded_2);
-            delete  style[prop_2];
+            delete style[prop_2];
         }
 
         var value_3 = style[prop_3];
@@ -143,11 +165,15 @@
             var eachValue_3 = value_3.split(' ');
 
             expanded_3[t_3[0] + '-top-left-' + t_3[1]] = eachValue_3[0];
-            expanded_3[t_3[0] + '-top-right-' + t_3[1]] = eachValue_3[1] || eachValue_3[0];
-            expanded_3[t_3[0] + '-bottom-right-' + t_3[1]] = eachValue_3[2] || eachValue_3[0];
-            expanded_3[t_3[0] + '-bottom-left-' + t_3[1]] = eachValue_3[3] || eachValue_3[1] || eachValue_3[0];
+            expanded_3[t_3[0] + '-top-right-' + t_3[1]] = eachValue_3[1] ||
+                                                          eachValue_3[0];
+            expanded_3[t_3[0] + '-bottom-right-' + t_3[1]] = eachValue_3[2] ||
+                                                             eachValue_3[0];
+            expanded_3[t_3[0] + '-bottom-left-' + t_3[1]] = eachValue_3[3] ||
+                                                            eachValue_3[1] ||
+                                                            eachValue_3[0];
             $.extend(style, expanded_3);
-            delete  style[prop_3];
+            delete style[prop_3];
         }
 
         return style;
