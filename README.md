@@ -66,6 +66,42 @@ Explanation of the config fields:
 | keyboardSpeed | a number config speed on keyboard press, default is 1 |
 | useTweenLite  | whether use TweenLite or not, default is true         |
 
+## Supported CSS Properties ##
+
+- **box module**
+	- width
+	- height
+	- margin
+	- padding
+	- border-width
+	- line-height
+- **positioning**
+	- top
+	- right
+	- left
+	- bottom
+- **others**
+	- opacity
+	
+CSS shorthand properties is also welcomed, eg: 
+
+```css
+margin: 1px 2px 3px 4px;
+
+/* Will be converted to */
+margin-top: 1px;
+margin-right: 2px;
+margin-bottom: 3px;
+margin-left: 4px;
+```
+
+## Supported CSS Units ##
+
+- px
+- em
+- rem
+- percentage
+
 ## License ##
 
 MIT.

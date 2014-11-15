@@ -4,17 +4,23 @@
   <meta charset="utf-8">
   <title>wheelSpy Demo</title>
   <style>
-        html,body {
-          width: 100%;
-          height: 100%;
+        #demo {
+          width: 1000px;
+          height: 1000px;
           position: fixed;
           top: 0;
           left: 0;
           overflow: hidden;
+          cursor: default;
+          border: 3px solid #777;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          -o-user-select: none;
           user-select: none;
         }
         h1{
-          position: fixed;
+          position: absolute;
           left: 50%;
           top: 2em;
           text-align: center;
@@ -27,7 +33,7 @@
         h1:after {
           content: '%';
         }
-        div {
+        .show {
           position: absolute;
           text-align: center;
           font-size: 3em;
@@ -40,6 +46,7 @@
           height: 200px;
           background: pink;
           line-height: 200px;
+          border: 1px solid green;
         }
 
         #block-2 {
@@ -47,7 +54,6 @@
           left: 300px;
           width: 100px;
           height: 100px;
-          margin-left: 1em;
           background: skyblue;
           line-height: 100px;
         }
@@ -63,10 +69,12 @@
     </style>
 </head>
 <body>
-  <h1>0.00</h1>
-  <div id="block-1">1</div>
-  <div id="block-2">2</div>
-  <div id="block-3">3</div>
+  <div id="demo">
+    <h1>0.00</h1>
+    <div id="block-1" class="show">1</div>
+    <div id="block-2" class="show">2</div>
+    <div id="block-3" class="show">3</div>
+  </div>
   <script src="../lib/jquery-1.11.1.min.js"></script>
   <script src="../lib/TweenLite.min.js"></script>
   <script src="../lib/CSSPlugin.min.js"></script>
@@ -85,9 +93,13 @@
             top: 500,
             opacity: 0.3
         }).to(130, 300, {
-            left: 600,
+            left: 800,
             top: 200,
             opacity: 1
+        }).to(300, 500, {
+            left: 0,
+            top: '100%',
+            'border-width': '5px 10px 15px 20px'
         });
 
         spy_2.to(0, 200, {
@@ -107,15 +119,16 @@
         }).to(500, 600, {
             opacity: 1
         }).to(600, 800, {
-            'margin': '10em',
+            'margin': '10em 8em 6em 4em',
             top: '100%',
-            left: '80%'
+            left: '100%'
         });
 
         spy_3.to(0, 800, {
             left: '3%',
             top: '10%',
-            opacity: 0
+            opacity: 0,
+            'border-radius': '10% 20% 30% 40%'
         }, function (percent) {
             $('h1').text((percent * 100).toFixed(2));
         });

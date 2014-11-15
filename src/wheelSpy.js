@@ -36,7 +36,7 @@
                 return elemPropValue;
             }
 
-            var div = $('<div></div>');
+            var div = $('<div style="position: absolute;border-style: solid;"></div>');
             $(div)
                 .appendTo($(elem).offsetParent())
                 .css(prop, 1 + unit);
@@ -45,7 +45,7 @@
 
             if (isNaN(scale)) {
                 //scale = 1;
-                throw new Error('error get value of ' + prop);
+                throw new Error('error get value of ' + prop + ' with result ' + scale);
             }
             // console.log(scale, elemPropValue);
             $(div).remove();
@@ -61,7 +61,8 @@
                 if (!finalFrame) {
                     continue;
                 }
-                if (!beginStyle[prop]) {
+                if (!beginStyle[prop] ||
+                    getUnitValue(beginStyle[prop]).unit !== finalFrame.unit) {
                     // set begin value
                     beginStyle[prop] = unitConverter(elem, prop, finalFrame.unit);
                 }
@@ -77,17 +78,6 @@
         return getStyle;
     })();
 
-    var currentFrame = 0;
-    var maxFrame = 0;
-    var queue = [];
-
-    var config = {
-        wheelSpeed: 1,
-        touchSpeed: 1,
-        keyboardSpeed: 1,
-        useTweenLite: true
-    };
-
     var checkRangeValid = function (keyframes, startFrame) {
         for (var i = 0, max = keyframes.length; i < max; i++) {
             var keyframe = keyframes[i];
@@ -99,22 +89,75 @@
         }
     };
 
-    var replaceAbbr = function(style) {
-        var props = ['margin', 'padding'];
-        for (var i = 0, max = props.length; i < max; i++) {
-            var prop = props[i];
-            var value = style[prop];
-            if (value) {
-                var splited = {};
-                splited[prop + '-left'] = value;
-                splited[prop + '-top'] = value;
-                splited[prop + '-right'] = value;
-                splited[prop + '-bottom'] = value;
-                $.extend(style, splited);
+    var expandCSS = function(style) {
+        // todo: background-position rendering
+        var prop_1 = ['margin', 'padding'];
+        var prop_2 = 'border-width';
+        var prop_3 = 'border-radius';
+        for (var i = 0, max = prop_1.length; i < max; i++) {
+            var prop = prop_1[i];
+            var value_1 = style[prop];
+            if (value_1) {
+                var expanded_1 = {};
+                var eachValue_1 = value_1.split(' ');
+
+                expanded_1[prop + '-top'] = eachValue_1[0];
+                expanded_1[prop + '-right'] = eachValue_1[1] ||
+                                              eachValue_1[0];
+                expanded_1[prop + '-bottom'] = eachValue_1[2] ||
+                                               eachValue_1[0];
+                expanded_1[prop + '-left'] = eachValue_1[3] ||
+                                             eachValue_1[1] ||
+                                             eachValue_1[0];
+                $.extend(style, expanded_1);
                 delete  style[prop];
             }
         }
+
+        var value_2 = style[prop_2];
+        if (value_2) {
+            var expanded_2 = {};
+            var t_2 = prop_2.split('-');
+            var eachValue_2 = value_2.split(' ');
+
+            expanded_2[t_2[0] + '-top-' + t_2[1]] = eachValue_2[0];
+            expanded_2[t_2[0] + '-right-' + t_2[1]] = eachValue_2[1] ||
+                                                      eachValue_2[0];
+            expanded_2[t_2[0] + '-bottom-' + t_2[1]] = eachValue_2[2] ||
+                                                       eachValue_2[0];
+            expanded_2[t_2[0] + '-left-' + t_2[1]] = eachValue_2[3] ||
+                                                     eachValue_2[1] ||
+                                                     eachValue_2[0];
+            $.extend(style, expanded_2);
+            delete  style[prop_2];
+        }
+
+        var value_3 = style[prop_3];
+        if (value_3) {
+            var expanded_3 = {};
+            var t_3 = prop_3.split('-');
+            var eachValue_3 = value_3.split(' ');
+
+            expanded_3[t_3[0] + '-top-left-' + t_3[1]] = eachValue_3[0];
+            expanded_3[t_3[0] + '-top-right-' + t_3[1]] = eachValue_3[1] || eachValue_3[0];
+            expanded_3[t_3[0] + '-bottom-right-' + t_3[1]] = eachValue_3[2] || eachValue_3[0];
+            expanded_3[t_3[0] + '-bottom-left-' + t_3[1]] = eachValue_3[3] || eachValue_3[1] || eachValue_3[0];
+            $.extend(style, expanded_3);
+            delete  style[prop_3];
+        }
+
         return style;
+    };
+
+    var currentFrame = 0;
+    var maxFrame = 0;
+    var queue = [];
+
+    var config = {
+        wheelSpeed: 1,
+        touchSpeed: 1,
+        keyboardSpeed: 1,
+        useTweenLite: true
     };
 
     var CreateSpy = function (elem) {
@@ -155,7 +198,7 @@
                 startFrame: start,
                 endFrame: end,
                 allFrames: end - start,
-                finalStyle: replaceAbbr(style),
+                finalStyle: expandCSS(style),
                 steps: callback,
                 beginStyle: lastSetting ?
                             $.extend({}, lastSetting.finalStyle) : {}
