@@ -32,8 +32,8 @@
             elemPropValue = (!elemPropValue || elemPropValue === 'auto') ?
                             0 : parseFloat(elemPropValue);
 
-            if (!unit) {
-                return elemPropValue;
+            if (unit === 'px') {
+                return elemPropValue + 'px';
             }
 
             var div = $('<div style="position: absolute;border-style: solid;"></div>');
@@ -50,8 +50,7 @@
             // console.log(scale, elemPropValue);
             $(div).remove();
 
-            return unit ? elemPropValue / scale + unit :
-                          elemPropValue / scale;
+            return elemPropValue / scale + unit;
         };
 
         var getStyle = function (elem, beginStyle, finalStyle, percent) {
@@ -61,6 +60,11 @@
                 if (!finalFrame) {
                     continue;
                 }
+
+                if (prop !== 'opacity') {
+                    finalFrame.unit = finalFrame.unit || 'px';
+                }
+
                 if (!beginStyle[prop] ||
                     getUnitValue(beginStyle[prop]).unit !== finalFrame.unit) {
                     // set begin value
