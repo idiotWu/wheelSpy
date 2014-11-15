@@ -44,7 +44,8 @@
             var scale = parseFloat($(div).css(prop));
 
             if (isNaN(scale)) {
-                scale = 1;
+                //scale = 1;
+                throw new Error('error get value of ' + prop);
             }
             // console.log(scale, elemPropValue);
             $(div).remove();
@@ -98,6 +99,24 @@
         }
     };
 
+    var replaceAbbr = function(style) {
+        var props = ['margin', 'padding'];
+        for (var i = 0, max = props.length; i < max; i++) {
+            var prop = props[i];
+            var value = style[prop];
+            if (value) {
+                var splited = {};
+                splited[prop + '-left'] = value;
+                splited[prop + '-top'] = value;
+                splited[prop + '-right'] = value;
+                splited[prop + '-bottom'] = value;
+                $.extend(style, splited);
+                delete  style[prop];
+            }
+        }
+        return style;
+    };
+
     var CreateSpy = function (elem) {
         this.target = elem[0];
         //this.index = queue.length;
@@ -136,7 +155,7 @@
                 startFrame: start,
                 endFrame: end,
                 allFrames: end - start,
-                finalStyle: style,
+                finalStyle: replaceAbbr(style),
                 steps: callback,
                 beginStyle: lastSetting ?
                             $.extend({}, lastSetting.finalStyle) : {}
@@ -307,7 +326,6 @@
 
     $(document).on('keydown', function (event) {
         // key press event
-        event.preventDefault();
         var keyCode = event.keyCode || event.which;
         if (keyCode === 40) {
             // down key
