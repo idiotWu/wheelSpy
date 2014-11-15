@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>wheelSpy Demo</title>
-    <style>
+  <meta charset="utf-8">
+  <title>wheelSpy Demo</title>
+  <style>
         html,body {
           width: 100%;
           height: 100%;
@@ -62,15 +62,15 @@
     </style>
 </head>
 <body>
-    <h1>0.00</h1>
-    <div id="block-1">1</div>
-    <div id="block-2">2</div>
-    <div id="block-3">3</div>
-    <script src="../lib/jquery-1.11.1.min.js"></script>
-    <script src="../lib/TweenLite.min.js"></script>
-    <script src="../lib/CSSPlugin.min.js"></script>
-    <script src="../src/wheelSpy.js"></script>
-    <script>
+  <h1>0.00</h1>
+  <div id="block-1">1</div>
+  <div id="block-2">2</div>
+  <div id="block-3">3</div>
+  <script src="../lib/jquery-1.11.1.min.js"></script>
+  <script src="../lib/TweenLite.min.js"></script>
+  <script src="../lib/CSSPlugin.min.js"></script>
+  <script src="../src/wheelSpy.js"></script>
+  <script>
         wheelSpy.config({
           touchSpeed: 0.5
         });
@@ -85,7 +85,7 @@
             opacity: 0.3
         }).to(130, 300, {
             left: 600,
-            top: 0,
+            top: 200,
             opacity: 1
         });
 
@@ -99,10 +99,19 @@
             left: 400,
             width: 100,
             height: 100,
+            opacity: 0,
             'line-height': '100px'
+        }).to(400, 500, {
+            top: 200
+        }).to(500, 600, {
+            opacity: 1
+        }).to(600, 800, {
+            'margin': '10em',
+            top: '100%',
+            left: '80%'
         });
 
-        spy_3.to(0, 500, {
+        spy_3.to(0, 800, {
             left: '3%',
             top: '10%',
             opacity: 0

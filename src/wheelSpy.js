@@ -27,6 +27,32 @@
             };
         };
 
+        var unitConverter = function (elem, prop, unit) {
+            var elemPropValue = $(elem).css(prop);
+            elemPropValue = (!elemPropValue || elemPropValue === 'auto') ?
+                            0 : parseFloat(elemPropValue);
+
+            if (!unit) {
+                return elemPropValue;
+            }
+
+            var div = $('<div></div>');
+            $(div)
+                .appendTo($(elem).offsetParent())
+                .css(prop, 1 + unit);
+
+            var scale = parseFloat($(div).css(prop));
+
+            if (isNaN(scale)) {
+                scale = 1;
+            }
+            // console.log(scale, elemPropValue);
+            $(div).remove();
+
+            return unit ? elemPropValue / scale + unit :
+                          elemPropValue / scale;
+        };
+
         var getStyle = function (elem, beginStyle, finalStyle, percent) {
             var style = {};
             for (var prop in finalStyle) {
@@ -34,27 +60,9 @@
                 if (!finalFrame) {
                     continue;
                 }
-                if (prop !== 'opacity') {
-                    // unit fix
-                    finalFrame.unit = finalFrame.unit || 'px';
-                }
                 if (!beginStyle[prop]) {
                     // set begin value
-                    var propValue = $(elem).css(prop);
-                    propValue = propValue === 'auto' ? 0 : parseFloat(propValue);
-
-                    if (finalFrame.unit === '%') {
-                        // percentage fix
-                        var parentProp = prop;
-                        if (prop === 'left' || prop === 'right') {
-                            parentProp = 'width';
-                        }
-                        if (prop === 'top' || prop === 'bottom') {
-                            parentProp = 'height';
-                        }
-                        propValue = propValue / parseFloat($(elem).parent().css(parentProp)) * 100;
-                    }
-                    beginStyle[prop] = propValue + finalFrame.unit;
+                    beginStyle[prop] = unitConverter(elem, prop, finalFrame.unit);
                 }
 
                 var beginFrame = getUnitValue(beginStyle[prop]);
@@ -131,7 +139,7 @@
                 finalStyle: style,
                 steps: callback,
                 beginStyle: lastSetting ?
-                    $.extend({}, lastSetting.finalStyle) : {}
+                            $.extend({}, lastSetting.finalStyle) : {}
             });
             return this;
         },
@@ -154,20 +162,11 @@
             //console.log(nextFrame);
 
             if (config.useTweenLite) {
-                tween.to(target, duration / 500, {
-                    css: nextFrame,
-                    onComplete: function () {
-                        //if (typeof keyframe.steps === 'function') {
-                        //    keyframe.steps.call(target, percent);
-                        //}
-                    }
-                });
+                tween.to(target, duration / 500, nextFrame);
             } else {
                 $(target).css(nextFrame);
-                //if (typeof keyframe.steps === 'function') {
-                //    keyframe.steps.call(target, percent);
-                //}
             }
+
             if (typeof keyframe.steps === 'function') {
                 keyframe.steps.call(target, percent);
             }
@@ -219,8 +218,9 @@
 
             var orgEvent = event.originalEvent;
             var delta = orgEvent.wheelDelta ?
-            -orgEvent.wheelDelta / 120 :
-            orgEvent.detail / 3 /* FF */;
+                        -orgEvent.wheelDelta / 120 :
+                        orgEvent.detail / 3 /* FF */;
+
             var frame = currentFrame + delta * config.wheelSpeed * 10;
 
             renderFrame(frame, duration);
@@ -231,7 +231,8 @@
             }, 300);
         };
 
-        var mouseWheelEvent = 'onmousewheel' in document.documentElement ? 'mousewheel' : 'DOMMouseScroll';
+        var mouseWheelEvent = 'onmousewheel' in document.documentElement ?
+                               'mousewheel' : 'DOMMouseScroll';
         $(document).on(mouseWheelEvent, wheelListener);
         //document.addEventListener(mouseWheelEvent, wheelListener, false);
     })();
@@ -242,8 +243,8 @@
 
         var getPageY = function (event) {
             var data = event.originalEvent.touches ?
-                event.originalEvent.touches[0] :
-                event;
+                       event.originalEvent.touches[0] :
+                       event;
             return data.pageY;
         };
 
