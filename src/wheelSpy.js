@@ -239,9 +239,6 @@
         },
         render: function (keyframe, duration) {
             //console.log(currentFrame, this.lastFrame);
-            if (Math.abs(currentFrame - this.lastFrame) < 1) {
-                return;
-            }
             this.lastFrame = currentFrame; // refresh object last frame
             var percent = (currentFrame - keyframe.startFrame) / keyframe.allFrames;
             if (percent < 0) {
@@ -308,12 +305,15 @@
                 return;
             }
             var duration = currentTime - timeStamp;
+            if (duration < 16) {
+                return;
+            }
             timeStamp = currentTime;
 
             var orgEvent = event.originalEvent;
             var delta = orgEvent.wheelDelta ?
-            -orgEvent.wheelDelta / 120 :
-            orgEvent.detail / 3 /* FF */;
+                        -orgEvent.wheelDelta / 120 :
+                        orgEvent.detail / 3 /* FF */;
 
             var frame = currentFrame + delta * config.wheelSpeed * 10;
 
@@ -362,6 +362,9 @@
             //var time = new Date().getTime();
             var time = event.timeStamp || (new Date).getTime();
             var duration = time - currentTime;
+            if (duration < 16) {
+                return;
+            }
             currentTime = time;
 
             var frame = currentFrame + changeValue * config.touchSpeed;
@@ -476,7 +479,7 @@
          */
         var jump = function (frame, duration, callback) {
             if (inAnime) {
-                clearTimeout(inAnime);
+                cancelAnimationFrame(inAnime);
                 inAnime = undefined;
             }
             frame = Math.min(maxFrame, Math.max(0, frame));
@@ -499,16 +502,16 @@
                     inAnime = undefined;
                     currentFrame = frame;
 
-                    if (typeof  callback === 'function') {
+                    if (typeof callback === 'function') {
                         return callback();
                     }
                     
                     return;
                 }
 
-                renderFrame(anime[i++], 30);
+                renderFrame(anime[i++], 16);
 
-                inAnime = setTimeout(_run, duration / length);
+                inAnime = requestAnimationFrame(_run);
             };
             _run();
         };
