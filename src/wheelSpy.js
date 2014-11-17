@@ -481,6 +481,7 @@
             }
             frame = Math.min(maxFrame, Math.max(0, frame));
             duration = duration || 500;
+
             var changeValue = frame - currentFrame;
             if (!changeValue) {
                 if (typeof  callback === 'function') {
@@ -496,10 +497,13 @@
             var _run = function () {
                 if (i === length - 1) {
                     inAnime = undefined;
+                    currentFrame = frame;
+
                     if (typeof  callback === 'function') {
-                        currentFrame = frame;
                         return callback();
                     }
+                    
+                    return;
                 }
 
                 renderFrame(anime[i++], 30);
