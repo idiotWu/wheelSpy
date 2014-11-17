@@ -445,11 +445,15 @@
      *                                    }
      *
      */
-    wheelSpy.config = function (configuration) {
-        $.extend(config, configuration);
-    };
+    wheelSpy.config = (function (config) {
+        return function (configuration) {
+            $.extend(config, configuration);
+        };
+    })(config);
 
     wheelSpy.scrollTo = (function () {
+        var inAnime;
+
         var easeOutCubic = function (t, b, c, d) {
             return c * ((t = t / d - 1) * t * t + 1) + b;
         };
@@ -467,11 +471,16 @@
 
         /**
          * @param {Number} frame: frame to scroll to
-         * @param {Number} duration: progress duration
+         * @param {Number} [duration]: progress duration, default is 500
          * @param {Function} [callback]: callback after finished
          */
         var jump = function (frame, duration, callback) {
+            if (inAnime) {
+                clearTimeout(inAnime);
+                inAnime = undefined;
+            }
             frame = Math.min(maxFrame, Math.max(0, frame));
+            duration = duration || 500;
             var changeValue = frame - currentFrame;
             if (!changeValue) {
                 if (typeof  callback === 'function') {
@@ -486,20 +495,36 @@
 
             var _run = function () {
                 if (i === length - 1) {
+                    inAnime = undefined;
                     if (typeof  callback === 'function') {
+                        currentFrame = frame;
                         return callback();
                     }
                 }
 
                 renderFrame(anime[i++], 30);
 
-                requestAnimationFrame(_run);
+                inAnime = setTimeout(_run, duration / length);
             };
             _run();
         };
 
         return jump;
     })();
+
+    wheelSpy.debug = function () {
+        if (typeof console === 'undefined' ||
+            typeof console.log === 'undefined') {
+            return alert('Debug is disabled');
+        }
+        console.log('currentFrame: ' + currentFrame + '\n' +
+                    'maxFrame: ' + maxFrame + '\n' +
+                    'spy-on: ' + preventAction);
+        console.log('all spys:');
+        console.log(queue);
+        console.log('current config:');
+        console.log(config);
+    };
 
     window.wheelSpy = wheelSpy;
 })(jQuery, TweenLite, window, document);

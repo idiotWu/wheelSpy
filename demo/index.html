@@ -70,7 +70,7 @@
 </head>
 <body>
   <div id="demo">
-    <button id="scroll-to">Scroll to 500</button>
+    <button id="scroll-to">Scroll to 200</button>
     <h1>0.00</h1>
     <div id="block-1" class="show">1</div>
     <div id="block-2" class="show">2</div>
@@ -136,7 +136,9 @@
 
         var btn = document.getElementById('scroll-to');
         btn.onclick = function() {
-          wheelSpy.scrollTo(500);
+          wheelSpy.scrollTo(200, 2000, function() {
+            // console.log('done');
+          });
         };
     </script>
 </body>
