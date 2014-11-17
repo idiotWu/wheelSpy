@@ -1,6 +1,7 @@
 /**
  * @date     2014/11/13
  * @author   Dolphin<dolphin.w.e@gmail.com>
+ * https://github.com/idiotWu/wheelSpy
  */
 
 (function ($, tween, window, document) {
@@ -54,7 +55,7 @@
 
             if (isNaN(scale)) {
                 console.log(elem);
-                throw new Error('error get value of ' + prop );
+                throw new Error('error get value of ' + prop);
             }
             //console.log(scale, propValue);
             $div_1.remove();
@@ -107,7 +108,7 @@
         }
     };
 
-    var expandCSS = function(style) {
+    var expandCSS = function (style) {
         // todo: background-position rendering
 
         for (var name in style) {
@@ -129,12 +130,12 @@
 
                 expanded_1[prop + '-top'] = eachValue_1[0];
                 expanded_1[prop + '-right'] = eachValue_1[1] ||
-                                              eachValue_1[0];
+                eachValue_1[0];
                 expanded_1[prop + '-bottom'] = eachValue_1[2] ||
-                                               eachValue_1[0];
+                eachValue_1[0];
                 expanded_1[prop + '-left'] = eachValue_1[3] ||
-                                             eachValue_1[1] ||
-                                             eachValue_1[0];
+                eachValue_1[1] ||
+                eachValue_1[0];
                 $.extend(style, expanded_1);
                 delete style[prop];
             }
@@ -148,12 +149,12 @@
 
             expanded_2[t_2[0] + '-top-' + t_2[1]] = eachValue_2[0];
             expanded_2[t_2[0] + '-right-' + t_2[1]] = eachValue_2[1] ||
-                                                      eachValue_2[0];
+            eachValue_2[0];
             expanded_2[t_2[0] + '-bottom-' + t_2[1]] = eachValue_2[2] ||
-                                                       eachValue_2[0];
+            eachValue_2[0];
             expanded_2[t_2[0] + '-left-' + t_2[1]] = eachValue_2[3] ||
-                                                     eachValue_2[1] ||
-                                                     eachValue_2[0];
+            eachValue_2[1] ||
+            eachValue_2[0];
             $.extend(style, expanded_2);
             delete style[prop_2];
         }
@@ -166,12 +167,12 @@
 
             expanded_3[t_3[0] + '-top-left-' + t_3[1]] = eachValue_3[0];
             expanded_3[t_3[0] + '-top-right-' + t_3[1]] = eachValue_3[1] ||
-                                                          eachValue_3[0];
+            eachValue_3[0];
             expanded_3[t_3[0] + '-bottom-right-' + t_3[1]] = eachValue_3[2] ||
-                                                             eachValue_3[0];
+            eachValue_3[0];
             expanded_3[t_3[0] + '-bottom-left-' + t_3[1]] = eachValue_3[3] ||
-                                                            eachValue_3[1] ||
-                                                            eachValue_3[0];
+            eachValue_3[1] ||
+            eachValue_3[0];
             $.extend(style, expanded_3);
             delete style[prop_3];
         }
@@ -179,6 +180,7 @@
         return style;
     };
 
+    var preventAction = false;
     var currentFrame = 0;
     var maxFrame = 0;
     var queue = [];
@@ -200,7 +202,7 @@
     };
 
     CreateSpy.prototype = {
-        /*
+        /**
          * @param {Number} start: start frame in all scroll frames
          * @param {Number} end: end frame
          * @param {Object} style: final style of target
@@ -231,7 +233,7 @@
                 finalStyle: expandCSS(style),
                 steps: callback,
                 beginStyle: lastSetting ?
-                            $.extend({}, lastSetting.finalStyle) : {}
+                    $.extend({}, lastSetting.finalStyle) : {}
             });
             return this;
         },
@@ -296,7 +298,7 @@
         // mousewheel event handler
         var timer, timeStamp;
         var wheelListener = function (event) {
-            if (!queue.length) {
+            if (!queue.length || preventAction) {
                 return;
             }
             //var currentTime = new Date().getTime();
@@ -310,8 +312,8 @@
 
             var orgEvent = event.originalEvent;
             var delta = orgEvent.wheelDelta ?
-                        -orgEvent.wheelDelta / 120 :
-                        orgEvent.detail / 3 /* FF */;
+            -orgEvent.wheelDelta / 120 :
+            orgEvent.detail / 3 /* FF */;
 
             var frame = currentFrame + delta * config.wheelSpeed * 10;
 
@@ -324,7 +326,7 @@
         };
 
         var mouseWheelEvent = 'onmousewheel' in document.documentElement ?
-                               'mousewheel' : 'DOMMouseScroll';
+            'mousewheel' : 'DOMMouseScroll';
         $(document).on(mouseWheelEvent, wheelListener);
         //document.addEventListener(mouseWheelEvent, wheelListener, false);
     })();
@@ -335,13 +337,13 @@
 
         var getPageY = function (event) {
             var data = event.originalEvent.touches ?
-                       event.originalEvent.touches[0] :
-                       event;
+                event.originalEvent.touches[0] :
+                event;
             return data.pageY;
         };
 
         var start = function (event) {
-            if (!queue.length) {
+            if (!queue.length || preventAction) {
                 return;
             }
             startTouchPos = currentTouchPos = getPageY(event);
@@ -350,7 +352,7 @@
         };
 
         var move = function (event) {
-            if (!startTouchPos) {
+            if (!startTouchPos || preventAction) {
                 return;
             }
             var pos = getPageY(event);
@@ -367,6 +369,9 @@
         };
 
         var stop = function () {
+            if (preventAction) {
+                return;
+            }
             var moveLength = startTouchPos - currentTouchPos;
             var duration = currentTime - startTime;
             startTouchPos = undefined;
@@ -382,15 +387,20 @@
             renderFrame(frame, duration * 2);
         };
 
-        var supportTouch = $.support.touch,
-            touchStartEvent = supportTouch ? 'touchstart' : 'mousedown',
-            touchStopEvent = supportTouch ? 'touchend' : 'mouseup',
-            touchMoveEvent = supportTouch ? 'touchmove' : 'mousemove';
+        //var supportTouch = $.support.touch,
+        //    touchStartEvent = supportTouch ? 'touchstart' : 'mousedown',
+        //    touchStopEvent = supportTouch ? 'touchend' : 'mouseup',
+        //    touchMoveEvent = supportTouch ? 'touchmove' : 'mousemove';
+        //
+        //$(document)
+        //    .on(touchStartEvent, start)
+        //    .on(touchMoveEvent, move)
+        //    .on(touchStopEvent, stop);
 
         $(document)
-            .on(touchStartEvent, start)
-            .on(touchMoveEvent, move)
-            .on(touchStopEvent, stop);
+            .on('touchstart', start)
+            .on('touchmove', move)
+            .on('touchend', stop);
 
         //document.addEventListener(touchStartEvent, start, false);
         //document.addEventListener(touchMoveEvent, move, false);
@@ -399,6 +409,9 @@
 
     $(document).on('keydown', function (event) {
         // key press event
+        if (preventAction) {
+            return;
+        }
         var keyCode = event.keyCode || event.which;
         if (keyCode === 40) {
             // down key
@@ -410,24 +423,44 @@
         }
     });
 
-    var wheelSpy = function (selector) {
-        return new CreateSpy($(selector));
-    };
+    var wheelSpy = {
+            add: function (selector) {
+                return new CreateSpy($(selector));
+            },
+            /**
+             * @param {Object} configuration: wheelSpy configuration contains
+             *                                wheelSpeed, touchSpeed and useTweenLite
+             *                                eg: {
+             *                                        wheelSpeed: 0.5, // default is 1
+             *                                        touchSpeed: 1.3, // default is 1
+             *                                        keyboardSpeed: 2, // default is 1
+             *                                        useTweenLite: true // default is true
+             *                                    }
+             *
+             */
+            config: function (configuration) {
+                $.extend(config, configuration);
+            },
+            stop: function () {
+                preventAction = true;
+            },
+            play: function () {
+                preventAction = false;
+            },
+            scrollTo: function (frame) {
+                frame = Math.min(maxFrame, Math.max(0, frame));
+                var _run = function () {
+                    if (Math.abs(currentFrame - frame) < 1) {
+                        return;
+                    }
 
-    /*
-     * @param {Object} configuration: wheelSpy configuration contains
-     *                                wheelSpeed, touchSpeed and useTweenLite
-     *                                eg: {
-     *                                        wheelSpeed: 0.5, // default is 1
-     *                                        touchSpeed: 1.3, // default is 1
-     *                                        keyboardSpeed: 2, // default is 1
-     *                                        useTweenLite: true // default is true
-     *                                    }
-     *
-     */
-    wheelSpy.config = function (configuration) {
-        $.extend(config, configuration);
-    };
+                    renderFrame(currentFrame + (frame - currentFrame) * 0.1, 30);
+
+                    requestAnimationFrame(_run);
+                };
+                _run();
+            }
+        };
 
     window.wheelSpy = wheelSpy;
 })(jQuery, TweenLite, window, document);

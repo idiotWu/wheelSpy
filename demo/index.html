@@ -70,6 +70,7 @@
 </head>
 <body>
   <div id="demo">
+    <button id="scroll-to">Scroll to 500</button>
     <h1>0.00</h1>
     <div id="block-1" class="show">1</div>
     <div id="block-2" class="show">2</div>
@@ -84,9 +85,9 @@
           touchSpeed: 0.5
         });
 
-        var spy_1 = wheelSpy('#block-1');
-        var spy_2 = wheelSpy('#block-2');
-        var spy_3 = wheelSpy('#block-3');
+        var spy_1 = wheelSpy.add('#block-1');
+        var spy_2 = wheelSpy.add('#block-2');
+        var spy_3 = wheelSpy.add('#block-3');
 
         spy_1.to(0, 130, {
             left: 400,
@@ -132,6 +133,11 @@
         }, function (percent) {
             $('h1').text((percent * 100).toFixed(2));
         });
+
+        var btn = document.getElementById('scroll-to');
+        btn.onclick = function() {
+          wheelSpy.scrollTo(500);
+        };
     </script>
 </body>
 </html>

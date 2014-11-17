@@ -4,10 +4,12 @@ A lightweight JavaScript parallax scroll library.
 
 ## How to use ##
 
-You can create a new spy by code
+### Basic Usage ###
+
+You can create a new spy by calling
 
 ```js
-var spy = wheelSpy(selector);
+var spy = wheelSpy.add(selector);
 ```
 
 The following code will add an action to the spy in the specific frame range:
@@ -47,7 +49,28 @@ spy.to(0, 200, {
 });
 ```
 
-The scroll frames is specific as the scrollTop value, everytime `.to()` method is called, the total scroll frames will extend with the maximum of all end frames.
+Everytime `.to()` method is called, the total scroll frames will extend with the maximum of all end frames.
+
+### Stop and Play ###
+
+You can stop/play whellSpy by calling
+
+```js
+wheelSpy.stop();
+wheelSpy.play();
+````
+
+which will stop/play all the spys.
+
+### Scroll to frame ###
+
+By calling
+
+```js
+wheelSpy.scrollTo(frame);
+```
+
+all spys will scroll to the frame you want.
 
 ## Configuration ##
 
