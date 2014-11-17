@@ -130,12 +130,12 @@
 
                 expanded_1[prop + '-top'] = eachValue_1[0];
                 expanded_1[prop + '-right'] = eachValue_1[1] ||
-                eachValue_1[0];
+                                              eachValue_1[0];
                 expanded_1[prop + '-bottom'] = eachValue_1[2] ||
-                eachValue_1[0];
+                                               eachValue_1[0];
                 expanded_1[prop + '-left'] = eachValue_1[3] ||
-                eachValue_1[1] ||
-                eachValue_1[0];
+                                             eachValue_1[1] ||
+                                             eachValue_1[0];
                 $.extend(style, expanded_1);
                 delete style[prop];
             }
@@ -149,12 +149,12 @@
 
             expanded_2[t_2[0] + '-top-' + t_2[1]] = eachValue_2[0];
             expanded_2[t_2[0] + '-right-' + t_2[1]] = eachValue_2[1] ||
-            eachValue_2[0];
+                                                      eachValue_2[0];
             expanded_2[t_2[0] + '-bottom-' + t_2[1]] = eachValue_2[2] ||
-            eachValue_2[0];
+                                                       eachValue_2[0];
             expanded_2[t_2[0] + '-left-' + t_2[1]] = eachValue_2[3] ||
-            eachValue_2[1] ||
-            eachValue_2[0];
+                                                   eachValue_2[1] ||
+                                                   eachValue_2[0];
             $.extend(style, expanded_2);
             delete style[prop_2];
         }
@@ -167,12 +167,12 @@
 
             expanded_3[t_3[0] + '-top-left-' + t_3[1]] = eachValue_3[0];
             expanded_3[t_3[0] + '-top-right-' + t_3[1]] = eachValue_3[1] ||
-            eachValue_3[0];
+                                                          eachValue_3[0];
             expanded_3[t_3[0] + '-bottom-right-' + t_3[1]] = eachValue_3[2] ||
-            eachValue_3[0];
+                                                           eachValue_3[0];
             expanded_3[t_3[0] + '-bottom-left-' + t_3[1]] = eachValue_3[3] ||
-            eachValue_3[1] ||
-            eachValue_3[0];
+                                                            eachValue_3[1] ||
+                                                            eachValue_3[0];
             $.extend(style, expanded_3);
             delete style[prop_3];
         }
@@ -326,7 +326,7 @@
         };
 
         var mouseWheelEvent = 'onmousewheel' in document.documentElement ?
-            'mousewheel' : 'DOMMouseScroll';
+                              'mousewheel' : 'DOMMouseScroll';
         $(document).on(mouseWheelEvent, wheelListener);
         //document.addEventListener(mouseWheelEvent, wheelListener, false);
     })();
@@ -423,44 +423,83 @@
         }
     });
 
-    var wheelSpy = {
-            add: function (selector) {
-                return new CreateSpy($(selector));
-            },
-            /**
-             * @param {Object} configuration: wheelSpy configuration contains
-             *                                wheelSpeed, touchSpeed and useTweenLite
-             *                                eg: {
-             *                                        wheelSpeed: 0.5, // default is 1
-             *                                        touchSpeed: 1.3, // default is 1
-             *                                        keyboardSpeed: 2, // default is 1
-             *                                        useTweenLite: true // default is true
-             *                                    }
-             *
-             */
-            config: function (configuration) {
-                $.extend(config, configuration);
-            },
-            stop: function () {
-                preventAction = true;
-            },
-            play: function () {
-                preventAction = false;
-            },
-            scrollTo: function (frame) {
-                frame = Math.min(maxFrame, Math.max(0, frame));
-                var _run = function () {
-                    if (Math.abs(currentFrame - frame) < 1) {
-                        return;
-                    }
+    var wheelSpy = {};
+    wheelSpy.add = function (selector) {
+        return new CreateSpy($(selector));
+    };
+    wheelSpy.stop = function () {
+        preventAction = true;
+    };
+    wheelSpy.play = function () {
+        preventAction = false;
+    };
 
-                    renderFrame(currentFrame + (frame - currentFrame) * 0.1, 30);
+    /**
+     * @param {Object} configuration: wheelSpy configuration contains
+     *                                wheelSpeed, touchSpeed and useTweenLite
+     *                                eg: {
+     *                                        wheelSpeed: 0.5, // default is 1
+     *                                        touchSpeed: 1.3, // default is 1
+     *                                        keyboardSpeed: 2, // default is 1
+     *                                        useTweenLite: true // default is true
+     *                                    }
+     *
+     */
+    wheelSpy.config = function (configuration) {
+        $.extend(config, configuration);
+    };
 
-                    requestAnimationFrame(_run);
-                };
-                _run();
-            }
+    wheelSpy.scrollTo = (function () {
+        var easeOutCubic = function (t, b, c, d) {
+            return c * ((t = t / d - 1) * t * t + 1) + b;
         };
+
+        var createAnime = function (changeValue, duration) {
+            var frames = duration / 16 | 0;
+            var anime = [];
+
+            for (var i = 0; i <= frames; i++) {
+                anime.push(easeOutCubic(i, currentFrame, changeValue, frames));
+            }
+
+            return anime;
+        };
+
+        /**
+         * @param {Number} frame: frame to scroll to
+         * @param {Number} duration: progress duration
+         * @param {Function} [callback]: callback after finished
+         */
+        var jump = function (frame, duration, callback) {
+            frame = Math.min(maxFrame, Math.max(0, frame));
+            var changeValue = frame - currentFrame;
+            if (!changeValue) {
+                if (typeof  callback === 'function') {
+                    return callback();
+                }
+            }
+
+            var anime = createAnime(changeValue, duration);
+
+            var length = anime.length;
+            var i = 0;
+
+            var _run = function () {
+                if (i === length - 1) {
+                    if (typeof  callback === 'function') {
+                        return callback();
+                    }
+                }
+
+                renderFrame(anime[i++], 30);
+
+                requestAnimationFrame(_run);
+            };
+            _run();
+        };
+
+        return jump;
+    })();
 
     window.wheelSpy = wheelSpy;
 })(jQuery, TweenLite, window, document);

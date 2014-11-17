@@ -67,7 +67,7 @@ which will stop/play all the spys.
 By calling
 
 ```js
-wheelSpy.scrollTo(frame);
+wheelSpy.scrollTo(frame:number, duration:number [, callback:function]);
 ```
 
 all spys will scroll to the frame you want.
