@@ -42,6 +42,8 @@
         }
 
         #block-1 {
+          top: 0;
+          left: 0;
           width: 200px;
           height: 200px;
           background: pink;
@@ -82,7 +84,8 @@
   <script src="../src/wheelSpy.js"></script>
   <script>
         wheelSpy.config({
-          touchSpeed: 0.5
+          touchSpeed: 0.5,
+          useTweenLite: true
         });
 
         var spy_1 = wheelSpy.add('#block-1');

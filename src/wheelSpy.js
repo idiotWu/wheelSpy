@@ -9,6 +9,12 @@
 
     var getStyle = (function () {
 
+        /**
+         * get css property value and unit
+         * @param {String} value: css property value string
+         *
+         * @return {Object | null}: object contains value and unit
+         */
         var getUnitValue = function (value) {
             var UNIT_VALUE_PATTERN = /([\d\.\-]+)([^\d]+)/;
             if (value === undefined) {
@@ -29,6 +35,16 @@
             };
         };
 
+        /**
+         * Convert css unit
+         * @param {Element} elem: target element
+         * @param {String} prop: css property name
+         * @param {String} finalUnit: unit to convert to
+         * @param {String} [propValue]: value of the property,
+         *                              will call $(elem).css(prop) if undefined
+         *
+         * @return {String} converted property value
+         */
         var unitConverter = function (elem, prop, finalUnit, propValue) {
             propValue = propValue || $(elem).css(prop);
             propValue = propValue === 'auto' ? 0 : propValue;
@@ -64,6 +80,16 @@
             return parseFloat(propValue) * scale + finalUnit;
         };
 
+        /**
+         * get style in animation by percent
+         * 
+         * @param {Element} elem: target element
+         * @param {Object} beginStyle: begin style of the element
+         * @param {Object} finalStyle: final style of the element
+         * @param {Number} percent: percent in animation
+         * 
+         * @return {Object} style
+         */
         var getStyle = function (elem, beginStyle, finalStyle, percent) {
             var style = {};
             for (var prop in finalStyle) {
@@ -85,6 +111,7 @@
 
                 if (beginFrame.unit !== finalFrame.unit) {
                     beginStyle[prop] = unitConverter(elem, prop, finalFrame.unit, beginStyle[prop]);
+                    beginFrame = getUnitValue(beginStyle[prop]);
                 }
 
                 var changeValue = finalFrame.value - beginFrame.value;
@@ -97,17 +124,27 @@
         return getStyle;
     })();
 
+    /**
+     * check if the spy range is valid
+     * @param {Array} keyframes: already set keyframses of target
+     * @param {Number} startFrame: start frame to be set
+     */
     var checkRangeValid = function (keyframes, startFrame) {
         for (var i = 0, max = keyframes.length; i < max; i++) {
             var keyframe = keyframes[i];
             if (startFrame >= keyframe.startFrame &&
                 startFrame < keyframe.endFrame) {
                 throw new Error('already has keyframe in range [' +
-                keyframe.startFrame + ',' + keyframe.endFrame + ']!');
+                    keyframe.startFrame + ',' + keyframe.endFrame + ']!');
             }
         }
     };
 
+    /**
+     * expand css shorthand
+     * @param {Object} style: styles to be expand
+     * @return {Object} expanded styles
+     */
     var expandCSS = function (style) {
         // todo: background-position rendering
 
@@ -130,12 +167,12 @@
 
                 expanded_1[prop + '-top'] = eachValue_1[0];
                 expanded_1[prop + '-right'] = eachValue_1[1] ||
-                                              eachValue_1[0];
+                    eachValue_1[0];
                 expanded_1[prop + '-bottom'] = eachValue_1[2] ||
-                                               eachValue_1[0];
+                    eachValue_1[0];
                 expanded_1[prop + '-left'] = eachValue_1[3] ||
-                                             eachValue_1[1] ||
-                                             eachValue_1[0];
+                    eachValue_1[1] ||
+                    eachValue_1[0];
                 $.extend(style, expanded_1);
                 delete style[prop];
             }
@@ -149,12 +186,12 @@
 
             expanded_2[t_2[0] + '-top-' + t_2[1]] = eachValue_2[0];
             expanded_2[t_2[0] + '-right-' + t_2[1]] = eachValue_2[1] ||
-                                                      eachValue_2[0];
+                eachValue_2[0];
             expanded_2[t_2[0] + '-bottom-' + t_2[1]] = eachValue_2[2] ||
-                                                       eachValue_2[0];
+                eachValue_2[0];
             expanded_2[t_2[0] + '-left-' + t_2[1]] = eachValue_2[3] ||
-                                                   eachValue_2[1] ||
-                                                   eachValue_2[0];
+                eachValue_2[1] ||
+                eachValue_2[0];
             $.extend(style, expanded_2);
             delete style[prop_2];
         }
@@ -167,12 +204,12 @@
 
             expanded_3[t_3[0] + '-top-left-' + t_3[1]] = eachValue_3[0];
             expanded_3[t_3[0] + '-top-right-' + t_3[1]] = eachValue_3[1] ||
-                                                          eachValue_3[0];
+                eachValue_3[0];
             expanded_3[t_3[0] + '-bottom-right-' + t_3[1]] = eachValue_3[2] ||
-                                                           eachValue_3[0];
+                eachValue_3[0];
             expanded_3[t_3[0] + '-bottom-left-' + t_3[1]] = eachValue_3[3] ||
-                                                            eachValue_3[1] ||
-                                                            eachValue_3[0];
+                eachValue_3[1] ||
+                eachValue_3[0];
             $.extend(style, expanded_3);
             delete style[prop_3];
         }
@@ -192,6 +229,11 @@
         useTweenLite: true
     };
 
+    /**
+     * create wheelSpy target
+     * @constructor
+     * @param {Element} elem: target element
+     */
     var CreateSpy = function (elem) {
         this.target = elem[0];
         //this.index = queue.length;
@@ -237,6 +279,11 @@
             });
             return this;
         },
+        /**
+         * reder the specific keyframe
+         * @param {Object} keyframe: specific keyframe of the spy
+         * @param {Number} duration
+         */
         render: function (keyframe, duration) {
             //console.log(currentFrame, this.lastFrame);
             this.lastFrame = currentFrame; // refresh object last frame
@@ -255,7 +302,9 @@
             if (config.useTweenLite) {
                 tween.to(target, duration / 500, nextFrame);
             } else {
-                $(target).css(nextFrame);
+                $(target).stop().animate(nextFrame, {
+                    duration: duration
+                });
             }
 
             if (typeof keyframe.steps === 'function') {
@@ -264,6 +313,11 @@
         }
     };
 
+    /**
+     * match the spy in range and render
+     * @param {Number} frame: frame to be rendered
+     * @param {Number} duration
+     */
     var renderFrame = function (frame, duration) {
         if (frame < 0) {
             currentFrame = 0;
@@ -312,8 +366,8 @@
 
             var orgEvent = event.originalEvent;
             var delta = orgEvent.wheelDelta ?
-                        -orgEvent.wheelDelta / 120 :
-                        orgEvent.detail / 3 /* FF */;
+                -orgEvent.wheelDelta / 120 :
+                orgEvent.detail / 3 /* FF */ ;
 
             var frame = currentFrame + delta * config.wheelSpeed * 10;
 
@@ -326,7 +380,7 @@
         };
 
         var mouseWheelEvent = 'onmousewheel' in document.documentElement ?
-                              'mousewheel' : 'DOMMouseScroll';
+            'mousewheel' : 'DOMMouseScroll';
         $(document).on(mouseWheelEvent, wheelListener);
         //document.addEventListener(mouseWheelEvent, wheelListener, false);
     })();
@@ -438,14 +492,11 @@
     };
 
     /**
-     * @param {Object} configuration: wheelSpy configuration contains
-     *                                wheelSpeed, touchSpeed and useTweenLite
-     *                                eg: {
-     *                                        wheelSpeed: 0.5, // default is 1
-     *                                        touchSpeed: 1.3, // default is 1
-     *                                        keyboardSpeed: 2, // default is 1
-     *                                        useTweenLite: true // default is true
-     *                                    }
+     * @param {Object} config: available wheelSpy configuration options:
+     *                         {Number} [wheelSpeed]: default is 1
+     *                         {Number} [touchSpeed]: default is 1
+     *                         {Number} [keyboardSpeed]: default is 1
+     *                         {Boolean} [useTweenLite]: default is true
      *
      */
     wheelSpy.config = (function (config) {
@@ -454,6 +505,12 @@
         };
     })(config);
 
+    /**
+     * scroll to specific frame
+     * @param {Number} frame: frame to scroll to
+     * @param {Number} [duration]: progress duration, default is 500
+     * @param {Function} [callback]: callback after finished
+     */
     wheelSpy.scrollTo = (function () {
         var inAnime;
 
@@ -472,11 +529,6 @@
             return anime;
         };
 
-        /**
-         * @param {Number} frame: frame to scroll to
-         * @param {Number} [duration]: progress duration, default is 500
-         * @param {Function} [callback]: callback after finished
-         */
         var jump = function (frame, duration, callback) {
             if (inAnime) {
                 cancelAnimationFrame(inAnime);
@@ -487,7 +539,7 @@
 
             var changeValue = frame - currentFrame;
             if (!changeValue) {
-                if (typeof  callback === 'function') {
+                if (typeof callback === 'function') {
                     return callback();
                 }
             }
@@ -505,7 +557,7 @@
                     if (typeof callback === 'function') {
                         return callback();
                     }
-                    
+
                     return;
                 }
 
@@ -525,8 +577,8 @@
             return alert('Debug is disabled');
         }
         console.log('currentFrame: ' + currentFrame + '\n' +
-                    'maxFrame: ' + maxFrame + '\n' +
-                    'spy-on: ' + preventAction);
+            'maxFrame: ' + maxFrame + '\n' +
+            'spy-on: ' + preventAction);
         console.log('all spys:');
         console.log(queue);
         console.log('current config:');
