@@ -54,6 +54,7 @@
                 };
             }
             if (!UNIT_VALUE_PATTERN.test(value)) {
+                //console.log(value);
                 throw new Error('Bad value:' + value);
             }
             return {
@@ -308,6 +309,7 @@
             var lastSetting = keyframes[keyframes.length - 1];
 
             keyframes.push({
+                percent: 0,
                 startFrame: start,
                 endFrame: end,
                 allFrames: end - start,
@@ -320,18 +322,17 @@
         },
         /**
          * reder the specific keyframe
-         * @param {Object} keyframe: specific keyframe of the spy
+         * @param {Object} keyframe: keyframe to be rendered
          * @param {Number} duration
          */
         render: function (keyframe, duration) {
-            //console.log(currentFrame, this.lastFrame);
-            this.lastFrame = currentFrame; // refresh object last frame
             var percent = (currentFrame - keyframe.startFrame) / keyframe.allFrames;
-            if (percent < 0) {
+            if (percent <= 0) {
                 percent = 0;
-            } else if (percent > 1) {
+            } else if (percent >= 1) {
                 percent = 1;
             }
+            keyframe.percent = percent; // log percent
 
             //console.log(percent);
             var target = this.target;
@@ -339,15 +340,46 @@
             //console.log(nextFrame);
 
             if (config.useTweenLite) {
-                tween.to(target, duration / 500, nextFrame);
-            } else {
-                $(target).stop().animate(nextFrame, {
-                    duration: duration
+                tween.to(target, duration / 500, {
+                    css: nextFrame
                 });
+            } else {
+                $(target).stop().animate(nextFrame, duration * 2);
             }
 
             if (typeof keyframe.steps === 'function') {
                 keyframe.steps.call(target, percent);
+            }
+        },
+        /**
+         * high speed scroll fix
+         * @param {Object} keyframe: keyframe to be fixed
+         * @param {Boolean} isScrollDown: whether is scrolling down or not
+         */
+        fix: function (keyframe, isScrollDown) {
+            //console.log('fixing ' + isScrollDown);
+
+            //tween.killTweensOf(this.target);
+
+            var duration, style;
+            //console.log(keyframe.percent);
+            if (isScrollDown) {
+                duration = Math.max(1- keyframe.percent, 0.5);
+                style = keyframe.finalStyle;
+                keyframe.percent = 1;
+            } else {
+                duration = Math.max(keyframe.percent - 0, 0.5);
+                style = keyframe.beginStyle;
+                keyframe.percent = 0;
+            }
+            //keyframe.percent = Number(isScrollDown);
+            //console.log(this.target);
+            if (config.useTweenLite) {
+                tween.to(this.target, duration, {
+                    css: style
+                });
+            } else {
+                $(this.target).stop().animate(style, duration);
             }
         }
     };
@@ -358,6 +390,7 @@
      * @param {Number} duration
      */
     var renderFrame = function (frame, duration) {
+        //console.log(frame);
         if (frame < 0) {
             currentFrame = 0;
         } else if (frame > maxFrame) {
@@ -379,6 +412,14 @@
                 if (currentFrame >= keyframe.startFrame &&
                     currentFrame <= keyframe.endFrame) {
                     spy.render(keyframe, duration);
+                }
+                if (currentFrame >= keyframe.endFrame &&
+                    keyframe.percent < 1) {
+                    spy.fix(keyframe, true);
+                }
+                if (currentFrame <= keyframe.beginFrame &&
+                    keyframe.percent > 0) {
+                    spy.fix(keyframe, false);
                 }
             }
         }
@@ -553,17 +594,19 @@
     wheelSpy.scrollTo = (function () {
         var inAnime;
 
-        var easeOutCubic = function (t, b, c, d) {
-            return c * ((t = t / d - 1) * t * t + 1) + b;
+        var easeInOutCubic = function (t, b, c, d) {
+            if ((t /= d / 2) < 1) return c / 2 * t * t * t + b;
+            return c / 2 * ((t -= 2) * t * t + 2) + b;
         };
 
         var createAnime = function (changeValue, duration) {
-            var frames = duration / 16 | 0;
+            var frames = duration / 16 | 0 + 1;
             var anime = [];
 
-            for (var i = 0; i <= frames; i++) {
-                anime.push(easeOutCubic(i, currentFrame, changeValue, frames));
+            for (var i = 1; i <= frames; i++) {
+                anime.push(easeInOutCubic(i, currentFrame, changeValue, frames));
             }
+            //console.log(anime);
 
             return anime;
         };
@@ -589,9 +632,8 @@
             var i = 0;
 
             var _run = function () {
-                if (i === length - 1) {
+                if (i === length) {
                     inAnime = undefined;
-                    currentFrame = frame;
 
                     if (typeof callback === 'function') {
                         return callback();
