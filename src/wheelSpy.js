@@ -4,6 +4,33 @@
  * https://github.com/idiotWu/wheelSpy
  */
 
+(function (window) {
+    var lastTime = 0;
+    var vendors = ['webkit', 'moz'];
+    for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || // name has changed in Webkit
+        window[vendors[x] + 'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = function (callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16.7 - (currTime - lastTime));
+            var id = window.setTimeout(function () {
+                callback(currTime + timeToCall);
+            }, timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+    }
+    if (!window.cancelAnimationFrame) {
+        window.cancelAnimationFrame = function (id) {
+            clearTimeout(id);
+        };
+    }
+})(window);
+
 (function ($, tween, window, document) {
     'use strict';
 
@@ -18,7 +45,7 @@
         var getUnitValue = function (value) {
             var UNIT_VALUE_PATTERN = /([\d\.\-]+)([^\d]+)/;
             if (value === undefined) {
-                return undefined;
+                return null;
             }
             if (!isNaN(value)) {
                 return {
@@ -47,8 +74,11 @@
          */
         var unitConverter = function (elem, prop, finalUnit, propValue) {
             propValue = propValue || $(elem).css(prop);
-            propValue = propValue === 'auto' ? 0 : propValue;
+            if (!propValue) {
+                throw new Error('unsupported css property: ' + prop);
+            }
 
+            propValue = propValue === 'auto' ? 0 : propValue;
             var originUnit = getUnitValue(propValue).unit;
             //console.log(getUnitValue(propValue))
 
@@ -148,10 +178,13 @@
     var expandCSS = function (style) {
         // todo: background-position rendering
 
-        for (var name in style) {
-            if (name !== 'opacity' &&
-                typeof style[name] === 'number') {
-                style[name] += 'px';
+        for (var prop in style) {
+            if (prop !== 'opacity' &&
+                typeof style[prop] === 'number') {
+                style[prop] += 'px';
+            }
+            if (!$('body').css(prop)) {
+                delete style[prop];
             }
         }
 
