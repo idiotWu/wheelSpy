@@ -96,6 +96,12 @@
             $div_1.appendTo($parent).css(prop, 1 + originUnit);
             $div_2.appendTo($parent).css(prop, 1 + finalUnit);
 
+            if (finalUnit === 'em') {
+                var fontSize = $(elem).css('fontSize');
+                $div_1.css('fontSize', fontSize);
+                $div_2.css('fontSize', fontSize);
+            }
+
             var scale = parseFloat($div_1.css(prop)) / parseFloat($div_2.css(prop));
             //console.log(scale);
 
