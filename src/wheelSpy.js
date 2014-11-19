@@ -75,6 +75,7 @@
          */
         var unitConverter = function (elem, prop, finalUnit, propValue) {
             propValue = propValue || $(elem).css(prop);
+            //console.log(propValue);
             if (!propValue) {
                 throw new Error('unsupported css property: ' + prop);
             }
@@ -88,31 +89,47 @@
             }
 
             if (originUnit === finalUnit) {
-                return propValue;
+                //console.log(prop, propValue);
+                return parseFloat(propValue) + finalUnit;
             }
 
+            if (finalUnit === 'em') {
+                var fontSize = parseFloat($(elem).css('fontSize'));
+                if (isNaN(fontSize)) {
+                    console.log(elem);
+                    throw new Error('error get value of ' + prop);
+                }
+                return parseFloat(propValue) / fontSize + 'em';
+            }
+
+            var $parent = $(elem).offsetParent();
             var $div_1 = $('<div style="position: absolute;border-style: solid;"></div>');
             var $div_2 = $('<div style="position: absolute;border-style: solid;"></div>');
-            var $parent = $(elem).offsetParent();
             $div_1.appendTo($parent).css(prop, 1 + originUnit);
             $div_2.appendTo($parent).css(prop, 1 + finalUnit);
 
-            if (finalUnit === 'em') {
-                var fontSize = $(elem).css('fontSize');
-                $div_1.css('fontSize', fontSize);
-                $div_2.css('fontSize', fontSize);
-            }
+            //if (finalUnit === 'em') {
+            //    var fontSize = $(elem).css('fontSize');
+            //    $div_1.css('fontSize', fontSize);
+            //    $div_2.css('fontSize', fontSize);
+            //}
 
-            var scale = parseFloat($div_1.css(prop)) / parseFloat($div_2.css(prop));
+            var value_1 = parseFloat($div_1.css(prop));
+            var value_2 = parseFloat($div_2.css(prop));
+
+            //console.log(value_1, value_2);
+
+            var scale = value_1 / value_2;
             //console.log(scale);
 
             if (isNaN(scale)) {
                 console.log(elem);
                 throw new Error('error get value of ' + prop);
             }
-            //console.log(scale, propValue);
+            //console.log(scale);
             $div_1.remove();
             $div_2.remove();
+            //console.log(prop, propValue);
 
             return parseFloat(propValue) * scale + finalUnit;
         };
@@ -337,7 +354,7 @@
             //console.log(percent);
             var target = this.target;
             var nextFrame = getStyle(target, keyframe.beginStyle, keyframe.finalStyle, percent);
-            //console.log(nextFrame);
+            //console.log(keyframe.beginStyle, nextFrame);
 
             if (config.useTweenLite) {
                 tween.to(target, duration / 500, {
@@ -360,7 +377,10 @@
             //console.log('fixing ' + isScrollDown);
 
             //tween.killTweensOf(this.target);
-
+            if ($.isEmptyObject(keyframe.beginStyle)) {
+                // get begin style first
+                getStyle(this.target, keyframe.beginStyle, keyframe.finalStyle, 0)
+            }
             var duration, style;
             //console.log(keyframe.percent);
             if (isScrollDown) {
@@ -594,9 +614,8 @@
     wheelSpy.scrollTo = (function () {
         var inAnime;
 
-        var easeInOutCubic = function (t, b, c, d) {
-            if ((t /= d / 2) < 1) return c / 2 * t * t * t + b;
-            return c / 2 * ((t -= 2) * t * t + 2) + b;
+        var easeOutCirc = function (t, b, c, d) {
+            return c * Math.sqrt(1 - (t = t / d - 1) * t) + b;
         };
 
         var createAnime = function (changeValue, duration) {
@@ -604,7 +623,7 @@
             var anime = [];
 
             for (var i = 1; i <= frames; i++) {
-                anime.push(easeInOutCubic(i, currentFrame, changeValue, frames));
+                anime.push(easeOutCirc(i, currentFrame, changeValue, frames));
             }
             //console.log(anime);
 
@@ -612,6 +631,9 @@
         };
 
         var jump = function (frame, duration, callback) {
+            if (preventAction) {
+                return;
+            }
             if (inAnime) {
                 cancelAnimationFrame(inAnime);
                 inAnime = undefined;
