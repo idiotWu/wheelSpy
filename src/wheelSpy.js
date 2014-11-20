@@ -99,16 +99,10 @@
             }
 
             var $parent = $(elem).offsetParent();
-            var $div_1 = $('<div style="position: absolute;border-style: solid;"></div>');
-            var $div_2 = $('<div style="position: absolute;border-style: solid;"></div>');
-            $div_1.appendTo($parent).css(prop, 1 + originUnit);
-            $div_2.appendTo($parent).css(prop, 1 + finalUnit);
-
-            //if (finalUnit === 'em') {
-            //    var fontSize = $(elem).css('fontSize');
-            //    $div_1.css('fontSize', fontSize);
-            //    $div_2.css('fontSize', fontSize);
-            //}
+            var $div_1 = $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
+            var $div_2 = $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
+            $div_1.appendTo($parent).css(prop, 12 + originUnit);
+            $div_2.appendTo($parent).css(prop, 12 + finalUnit);
 
             var value_1 = parseFloat($div_1.css(prop));
             var value_2 = parseFloat($div_2.css(prop));
