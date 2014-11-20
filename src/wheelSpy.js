@@ -94,11 +94,7 @@
             }
 
             if (finalUnit === 'em') {
-                var fontSize = parseFloat($(elem).css('fontSize'));
-                if (isNaN(fontSize)) {
-                    console.log(elem);
-                    throw new Error('error get value of ' + prop);
-                }
+                var fontSize = parseFloat($(elem).css('fontSize')) || 1;
                 return parseFloat(propValue) / fontSize + 'em';
             }
 
@@ -332,8 +328,7 @@
                 allFrames: end - start,
                 finalStyle: expandCSS(style),
                 steps: callback,
-                beginStyle: lastSetting ?
-                    $.extend({}, lastSetting.finalStyle) : {}
+                beginStyle: lastSetting ? $.extend({}, lastSetting.finalStyle) : {}
             });
             return this;
         },
@@ -375,11 +370,11 @@
          */
         fix: function (keyframe, isScrollDown) {
             //console.log('fixing ' + isScrollDown);
-
+            var target = this.target;
             //tween.killTweensOf(this.target);
             if ($.isEmptyObject(keyframe.beginStyle)) {
                 // get begin style first
-                getStyle(this.target, keyframe.beginStyle, keyframe.finalStyle, 0)
+                getStyle(target, keyframe.beginStyle, keyframe.finalStyle, 0);
             }
             var duration, style;
             //console.log(keyframe.percent);
@@ -395,11 +390,15 @@
             //keyframe.percent = Number(isScrollDown);
             //console.log(this.target);
             if (config.useTweenLite) {
-                tween.to(this.target, duration, {
+                tween.to(target, duration, {
                     css: style
                 });
             } else {
-                $(this.target).stop().animate(style, duration);
+                $(target).stop().animate(style, duration);
+            }
+
+            if (typeof keyframe.steps === 'function') {
+                keyframe.steps.call(target, 1);
             }
         }
     };
@@ -419,7 +418,7 @@
             currentFrame = frame;
         }
         //console.log(currentFrame,frame < 0)
-
+        var curFrame = currentFrame;
         for (var i = 0, j = queue.length; i < j; i++) {
             var spy = queue[i];
             var frames = spy.keyframes;
@@ -429,15 +428,15 @@
 
             for (var k = 0, l = frames.length; k < l; k++) {
                 var keyframe = frames[k];
-                if (currentFrame >= keyframe.startFrame &&
-                    currentFrame <= keyframe.endFrame) {
+                if (curFrame >= keyframe.startFrame &&
+                    curFrame <= keyframe.endFrame) {
                     spy.render(keyframe, duration);
                 }
-                if (currentFrame >= keyframe.endFrame &&
+                if (curFrame >= keyframe.endFrame &&
                     keyframe.percent < 1) {
                     spy.fix(keyframe, true);
                 }
-                if (currentFrame <= keyframe.beginFrame &&
+                if (curFrame <= keyframe.startFrame &&
                     keyframe.percent > 0) {
                     spy.fix(keyframe, false);
                 }
@@ -491,8 +490,8 @@
 
         var getPageY = function (event) {
             var data = event.originalEvent.touches ?
-                event.originalEvent.touches[0] :
-                event;
+                       event.originalEvent.touches[0] :
+                       event;
             return data.pageY;
         };
 
