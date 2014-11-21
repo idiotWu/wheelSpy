@@ -392,7 +392,7 @@
             }
 
             if (typeof keyframe.steps === 'function') {
-                keyframe.steps.call(target, 1);
+                keyframe.steps.call(target, keyframe.percent);
             }
         }
     };
@@ -674,7 +674,7 @@
         }
         console.log('currentFrame: ' + currentFrame + '\n' +
             'maxFrame: ' + maxFrame + '\n' +
-            'spy-on: ' + preventAction);
+            'spy-on: ' + !preventAction);
         console.log('all spys:');
         console.log(queue);
         console.log('current config:');
