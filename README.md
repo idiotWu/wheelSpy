@@ -77,7 +77,7 @@ all spys will scroll to the frame you want.
 By calling
 
 ```js
-wheelSpy.config();
+wheelSpy.debug();
 ```
 
 you will get a list of current spys info in console.
