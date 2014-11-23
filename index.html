@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Wheelspy by idiotWu</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/idiotWu/wheelSpy">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/idiotWu/wheelSpy/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/idiotWu/wheelSpy/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Wheelspy</h1>
+          <p>A lightweight JavaScript parallax scroll library.</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/idiotWu">idiotWu</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>
+<a id="wheelspy" class="anchor" href="#wheelspy" aria-hidden="true"><span class="octicon octicon-link"></span></a>wheelSpy</h1>
+
+<p>A lightweight JavaScript parallax scroll library.</p>
+
+<h2>
+<a id="how-to-use" class="anchor" href="#how-to-use" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to use</h2>
+
+<h3>
+<a id="basic-usage" class="anchor" href="#basic-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Basic Usage</h3>
+
+<p>You can create a new spy by calling</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-s">var</span> spy <span class="pl-k">=</span> wheelSpy.<span class="pl-s3">add</span>(selector);</pre></div>
+
+<p>The following code will add an action to the spy in the specific frame range:</p>
+
+<div class="highlight highlight-js"><pre>spy.to(startFrame<span class="pl-k">:</span>number, endFrame<span class="pl-k">:</span>number, styles<span class="pl-k">:</span>object [, callback<span class="pl-k">:</span><span class="pl-st">function</span>]);</pre></div>
+
+<p>Explanation of the parameters: </p>
+
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>startFrame</td>
+<td>start frame in all scroll frames, from 0 to infinite</td>
+</tr>
+<tr>
+<td>endFrame</td>
+<td>end frame, from startFrame to infinite</td>
+</tr>
+<tr>
+<td>styles</td>
+<td>the expected styles for the element</td>
+</tr>
+<tr>
+<td>callback</td>
+<td>callback with this progress percent</td>
+</tr>
+</tbody>
+</table>
+
+<p>Also you can chain together methods as many as you like:</p>
+
+<div class="highlight highlight-js"><pre>spy.to(<span class="pl-c1">0</span>, <span class="pl-c1">200</span>, {
+    left<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+    top<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+    width<span class="pl-k">:</span> <span class="pl-c1">400</span>,
+    height<span class="pl-k">:</span> <span class="pl-c1">400</span>,
+    <span class="pl-s1"><span class="pl-pds">'</span>line-height<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">'</span>400px<span class="pl-pds">'</span></span>
+}).to(<span class="pl-c1">250</span>, <span class="pl-c1">400</span>, {
+    left<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">'</span>400px<span class="pl-pds">'</span></span>,
+    top<span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">'</span>100%<span class="pl-pds">'</span></span>,
+    width<span class="pl-k">:</span> <span class="pl-c1">100</span>,
+    height<span class="pl-k">:</span> <span class="pl-c1">100</span>,
+    <span class="pl-s1"><span class="pl-pds">'</span>line-height<span class="pl-pds">'</span></span><span class="pl-k">:</span> <span class="pl-s1"><span class="pl-pds">'</span>100px<span class="pl-pds">'</span></span>,
+}).to(<span class="pl-c1">400</span>, <span class="pl-c1">450</span>, {
+    opacity<span class="pl-k">:</span> <span class="pl-c1">0</span>
+}, <span class="pl-st">function</span>(<span class="pl-vpf">percent</span>) {
+    $(<span class="pl-s1"><span class="pl-pds">'</span>#info<span class="pl-pds">'</span></span>).<span class="pl-sc">text</span>(percent);
+});</pre></div>
+
+<p>Everytime <code>.to()</code> method is called, the total scroll frames will extend with the maximum of all end frames.</p>
+
+<h3>
+<a id="stop-and-play" class="anchor" href="#stop-and-play" aria-hidden="true"><span class="octicon octicon-link"></span></a>Stop and Play</h3>
+
+<p>You can stop/play whellSpy by calling</p>
+
+<div class="highlight highlight-js"><pre>wheelSpy.<span class="pl-s3">stop</span>();
+wheelSpy.play();</pre></div>
+
+<p>which will stop/play all the spys.</p>
+
+<h3>
+<a id="scroll-to-frame" class="anchor" href="#scroll-to-frame" aria-hidden="true"><span class="octicon octicon-link"></span></a>Scroll to frame</h3>
+
+<p>By calling</p>
+
+<div class="highlight highlight-js"><pre>wheelSpy.<span class="pl-s3">scrollTo</span>(frame<span class="pl-k">:</span>number [, duration<span class="pl-k">:</span>number, callback<span class="pl-k">:</span><span class="pl-st">function</span>]);</pre></div>
+
+<p>all spys will scroll to the frame you want.</p>
+
+<h3>
+<a id="debug" class="anchor" href="#debug" aria-hidden="true"><span class="octicon octicon-link"></span></a>Debug</h3>
+
+<p>By calling</p>
+
+<div class="highlight highlight-js"><pre>wheelSpy.debug();</pre></div>
+
+<p>you will get a list of current spys info in console.</p>
+
+<h2>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>You can specific your wheelSpy config by calling </p>
+
+<div class="highlight highlight-js"><pre>wheelSpy.config(yourConfig<span class="pl-k">:</span>object)</pre></div>
+
+<p>Explanation of the config fields:</p>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>wheelSpeed</td>
+<td>a number config mouse wheel speed, default is 1</td>
+</tr>
+<tr>
+<td>touchSpeed</td>
+<td>a number config touch move speed, default is 1</td>
+</tr>
+<tr>
+<td>keyboardSpeed</td>
+<td>a number config speed on keyboard press, default is 1</td>
+</tr>
+<tr>
+<td>useTweenLite</td>
+<td>whether use TweenLite or not, default is true</td>
+</tr>
+</tbody>
+</table>
+
+<h2>
+<a id="supported-css-properties" class="anchor" href="#supported-css-properties" aria-hidden="true"><span class="octicon octicon-link"></span></a>Supported CSS Properties</h2>
+
+<ul>
+<li>
+<strong>box module</strong>
+
+<ul>
+<li>width</li>
+<li>height</li>
+<li>margin</li>
+<li>padding</li>
+<li>border-width</li>
+<li>line-height</li>
+</ul>
+</li>
+<li>
+<strong>positioning</strong>
+
+<ul>
+<li>top</li>
+<li>right</li>
+<li>left</li>
+<li>bottom</li>
+</ul>
+</li>
+<li>
+<strong>others</strong>
+
+<ul>
+<li>opacity</li>
+</ul>
+</li>
+</ul>
+
+<p>CSS shorthand properties is also welcomed, eg: </p>
+
+<div class="highlight highlight-css"><pre>margin: 1px 2px 3px 4px;
+
+<span class="pl-c">/* Will be converted to */</span>
+margin-top: 1px;
+margin-right: 2px;
+margin-bottom: 3px;
+margin-left: 4px;</pre></div>
+
+<h2>
+<a id="supported-css-units" class="anchor" href="#supported-css-units" aria-hidden="true"><span class="octicon octicon-link"></span></a>Supported CSS Units</h2>
+
+<ul>
+<li>px</li>
+<li>em</li>
+<li>rem</li>
+<li>percentage</li>
+</ul>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>MIT.</p>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
