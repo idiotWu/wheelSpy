@@ -605,7 +605,7 @@
      * @param {Function} [callback]: callback after finished
      */
     wheelSpy.scrollTo = (function () {
-        var inAnime;
+        var queue = [];
 
         var easeOutCirc = function (t, b, c, d) {
             return c * Math.sqrt(1 - (t = t / d - 1) * t) + b;
@@ -623,33 +623,23 @@
             return anime;
         };
 
-        var jump = function (frame, duration, callback) {
-            if (preventAction) {
-                return;
-            }
-            if (inAnime) {
-                cancelAnimationFrame(inAnime);
-                inAnime = undefined;
-            }
-            frame = Math.min(maxFrame, Math.max(0, frame));
-            duration = duration || 500;
-
-            var changeValue = frame - currentFrame;
-            if (!changeValue) {
-                if (typeof callback === 'function') {
-                    return callback();
-                }
-            }
-
+        var createQueue = function (changeValue, duration, callback) {
             var anime = createAnime(changeValue, duration);
+
+            var status = {
+                index: queue.length,
+                stop: false
+            };
+            queue.push(status);
 
             var length = anime.length;
             var i = 0;
 
             var _run = function () {
+                if (status.stop) {
+                    return;
+                }
                 if (i === length) {
-                    inAnime = undefined;
-
                     if (typeof callback === 'function') {
                         return callback();
                     }
@@ -659,9 +649,31 @@
 
                 renderFrame(anime[i++], 16);
 
-                inAnime = requestAnimationFrame(_run);
+                requestAnimationFrame(_run);
             };
             _run();
+        };
+
+        var dequeue = function () {
+            for (var i = 0, max = queue.length; i < max; i++) {
+                queue[i].stop = true;
+            }
+            queue = [];
+        };
+
+        var jump = function (frame, duration, callback) {
+            dequeue();
+            frame = Math.min(maxFrame, Math.max(0, frame));
+            duration = duration || 500;
+
+            var changeValue = frame - currentFrame;
+            if (!changeValue) {
+                if (typeof callback === 'function') {
+                    return callback();
+                }
+                return;
+            }
+            createQueue(changeValue, duration, callback);
         };
 
         return jump;
