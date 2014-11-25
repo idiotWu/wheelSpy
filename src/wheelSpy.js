@@ -64,6 +64,19 @@
         };
 
         /**
+         * get one unit value
+         * @param {Element} parent: parent element to append to
+         * @param {String} prop: css property name
+         * @param {String} unit: unit to apply
+         */
+        var getOneUnitValue = function (parent, prop, unit) {
+            var $div= $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
+            $div.appendTo(parent).css(prop, 12 +unit);
+            var value = parseFloat($div.css(prop));
+            $div.remove();
+            return value;
+        };
+        /**
          * Convert css unit
          * @param {Element} elem: target element
          * @param {String} prop: css property name
@@ -93,19 +106,20 @@
                 return parseFloat(propValue) + finalUnit;
             }
 
+            var $parent = $(elem).offsetParent();
+            var value_1 = getOneUnitValue($parent, prop, originUnit);
+            //var $div_1 = $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
+            //$div_1.appendTo($parent).css(prop, 12 + originUnit);
+            //var value_1 = parseFloat($div_1.css(prop));
+
             if (finalUnit === 'em') {
                 var fontSize = parseFloat($(elem).css('fontSize')) || 1;
-                return parseFloat(propValue) / fontSize + 'em';
+                return value_1 / fontSize + 'em';
             }
-
-            var $parent = $(elem).offsetParent();
-            var $div_1 = $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
-            var $div_2 = $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
-            $div_1.appendTo($parent).css(prop, 12 + originUnit);
-            $div_2.appendTo($parent).css(prop, 12 + finalUnit);
-
-            var value_1 = parseFloat($div_1.css(prop));
-            var value_2 = parseFloat($div_2.css(prop));
+            //var $div_2 = $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
+            //$div_2.appendTo($parent).css(prop, 12 + finalUnit);
+            //var value_2 = parseFloat($div_2.css(prop));
+            var value_2 = getOneUnitValue($parent, prop, finalUnit);
 
             //console.log(value_1, value_2);
 
@@ -117,8 +131,6 @@
                 throw new Error('error get value of ' + prop);
             }
             //console.log(scale);
-            $div_1.remove();
-            $div_2.remove();
             //console.log(prop, propValue);
 
             return parseFloat(propValue) * scale + finalUnit;
