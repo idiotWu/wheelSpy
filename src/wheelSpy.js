@@ -107,7 +107,7 @@
             }
             if (finalUnit === 'em') {
                 var fontSize = parseFloat($(elem).css('fontSize')) || 1;
-                return parseFloat($(elem).css(prop)) / fontSize + 'em';
+                return (parseFloat($(elem).css(prop)) || 0) / fontSize + 'em';
             }
 
             //var $div_1 = $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
@@ -138,12 +138,12 @@
 
         /**
          * get style in animation by percent
-         * 
+         *
          * @param {Element} elem: target element
          * @param {Object} beginStyle: begin style of the element
          * @param {Object} finalStyle: final style of the element
          * @param {Number} percent: percent in animation
-         * 
+         *
          * @return {Object} style
          */
         var getStyle = function (elem, beginStyle, finalStyle, percent) {
@@ -362,7 +362,7 @@
                     css: nextFrame
                 });
             } else {
-                $(target).stop().animate(nextFrame, duration * 2);
+                $(target).css(nextFrame);
             }
 
             if (typeof keyframe.steps === 'function') {
@@ -400,7 +400,7 @@
                     css: style
                 });
             } else {
-                $(target).stop().animate(style, duration);
+                $(target).css(style);
             }
 
             if (typeof keyframe.steps === 'function') {
@@ -454,6 +454,8 @@
         // mousewheel event handler
         var timer, timeStamp;
         var wheelListener = function (event) {
+            event.preventDefault();
+
             if (!queue.length || preventAction) {
                 return;
             }
@@ -495,6 +497,8 @@
         var startTouchPos, startTime, currentTouchPos, currentTime;
 
         var getPageY = function (event) {
+            event.preventDefault();
+
             var data = event.originalEvent.touches ?
                        event.originalEvent.touches[0] :
                        event;
@@ -577,10 +581,12 @@
         var keyCode = event.keyCode || event.which;
         if (keyCode === 40) {
             // down key
+            event.preventDefault();
             renderFrame(currentFrame += config.keyboardSpeed * 2, 30);
         }
         if (keyCode === 38) {
             // up key
+            event.preventDefault();
             renderFrame(currentFrame -= config.keyboardSpeed * 2, 30);
         }
     });
@@ -617,7 +623,7 @@
      * @param {Function} [callback]: callback after finished
      */
     wheelSpy.scrollTo = (function () {
-        var queue = [];
+        var _queue = [];
 
         var easeOutCirc = function (t, b, c, d) {
             return c * Math.sqrt(1 - (t = t / d - 1) * t) + b;
@@ -639,10 +645,10 @@
             var anime = createAnime(changeValue, duration);
 
             var status = {
-                index: queue.length,
+                index: _queue.length,
                 stop: false
             };
-            queue.push(status);
+            _queue.push(status);
 
             var length = anime.length;
             var i = 0;
@@ -667,10 +673,10 @@
         };
 
         var dequeue = function () {
-            for (var i = 0, max = queue.length; i < max; i++) {
-                queue[i].stop = true;
+            for (var i = 0, max = _queue.length; i < max; i++) {
+                _queue[i].stop = true;
             }
-            queue = [];
+            _queue = [];
         };
 
         var jump = function (frame, duration, callback) {
