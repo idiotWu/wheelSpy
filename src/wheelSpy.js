@@ -65,20 +65,20 @@
 
         /**
          * get one unit value
-         * @param {Element} parent: parent element to append to
+         * @param {jQuery} $parent: parent element to append to
          * @param {String} prop: css property name
          * @param {String} unit: unit to apply
          */
-        var getOneUnitValue = function (parent, prop, unit) {
+        var getOneUnitValue = function ($parent, prop, unit) {
             var $div= $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
-            $div.appendTo(parent).css(prop, 12 +unit);
+            $div.appendTo($parent).css(prop, 12 +unit);
             var value = parseFloat($div.css(prop));
             $div.remove();
             return value;
         };
         /**
          * Convert css unit
-         * @param {Element} elem: target element
+         * @param {jQuery} $elem: target element
          * @param {String} prop: css property name
          * @param {String} finalUnit: unit to convert to
          * @param {String} [propValue]: value of the property,
@@ -86,8 +86,8 @@
          *
          * @return {String} converted property value
          */
-        var unitConverter = function (elem, prop, finalUnit, propValue) {
-            propValue = propValue || $(elem).css(prop);
+        var unitConverter = function ($elem, prop, finalUnit, propValue) {
+            propValue = propValue || $elem.css(prop);
             //console.log(propValue);
             if (!propValue) {
                 throw new Error('unsupported css property: ' + prop);
@@ -106,18 +106,11 @@
                 return parseFloat(propValue) + finalUnit;
             }
             if (finalUnit === 'em') {
-                var fontSize = parseFloat($(elem).css('fontSize')) || 1;
-                return (parseFloat($(elem).css(prop)) || 0) / fontSize + 'em';
+                var fontSize = parseFloat($elem.css('fontSize')) || 1;
+                return (parseFloat($elem.css(prop)) || 0) / fontSize + 'em';
             }
 
-            //var $div_1 = $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
-            //$div_1.appendTo($parent).css(prop, 12 + originUnit);
-            //var value_1 = parseFloat($div_1.css(prop));
-            //var $div_2 = $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
-            //$div_2.appendTo($parent).css(prop, 12 + finalUnit);
-            //var value_2 = parseFloat($div_2.css(prop));
-
-            var $parent = $(elem).offsetParent();
+            var $parent = $elem.offsetParent();
             var value_1 = getOneUnitValue($parent, prop, originUnit);
             var value_2 = getOneUnitValue($parent, prop, finalUnit);
 
@@ -127,7 +120,7 @@
             //console.log(scale);
 
             if (isNaN(scale)) {
-                console.log(elem);
+                console.log($elem);
                 throw new Error('error get value of ' + prop);
             }
             //console.log(scale);
@@ -139,14 +132,14 @@
         /**
          * get style in animation by percent
          *
-         * @param {Element} elem: target element
+         * @param {jQuery} $elem: target element
          * @param {Object} beginStyle: begin style of the element
          * @param {Object} finalStyle: final style of the element
          * @param {Number} percent: percent in animation
          *
          * @return {Object} style
          */
-        var getStyle = function (elem, beginStyle, finalStyle, percent) {
+        var getStyle = function ($elem, beginStyle, finalStyle, percent) {
             var style = {};
             for (var prop in finalStyle) {
                 var finalFrame = getUnitValue(finalStyle[prop]);
@@ -160,13 +153,13 @@
 
                 if (!beginStyle[prop]) {
                     // set begin value
-                    beginStyle[prop] = unitConverter(elem, prop, finalFrame.unit);
+                    beginStyle[prop] = unitConverter($elem, prop, finalFrame.unit);
                 }
 
                 var beginFrame = getUnitValue(beginStyle[prop]);
 
                 if (beginFrame.unit !== finalFrame.unit) {
-                    beginStyle[prop] = unitConverter(elem, prop, finalFrame.unit, beginStyle[prop]);
+                    beginStyle[prop] = unitConverter($elem, prop, finalFrame.unit, beginStyle[prop]);
                     beginFrame = getUnitValue(beginStyle[prop]);
                 }
 
@@ -225,13 +218,9 @@
                 var eachValue_1 = value_1.split(' ');
 
                 expanded_1[prop + '-top'] = eachValue_1[0];
-                expanded_1[prop + '-right'] = eachValue_1[1] ||
-                    eachValue_1[0];
-                expanded_1[prop + '-bottom'] = eachValue_1[2] ||
-                    eachValue_1[0];
-                expanded_1[prop + '-left'] = eachValue_1[3] ||
-                    eachValue_1[1] ||
-                    eachValue_1[0];
+                expanded_1[prop + '-right'] = eachValue_1[1] || eachValue_1[0];
+                expanded_1[prop + '-bottom'] = eachValue_1[2] || eachValue_1[0];
+                expanded_1[prop + '-left'] = eachValue_1[3] || eachValue_1[1] || eachValue_1[0];
                 $.extend(style, expanded_1);
                 delete style[prop];
             }
@@ -244,13 +233,9 @@
             var eachValue_2 = value_2.split(' ');
 
             expanded_2[t_2[0] + '-top-' + t_2[1]] = eachValue_2[0];
-            expanded_2[t_2[0] + '-right-' + t_2[1]] = eachValue_2[1] ||
-                eachValue_2[0];
-            expanded_2[t_2[0] + '-bottom-' + t_2[1]] = eachValue_2[2] ||
-                eachValue_2[0];
-            expanded_2[t_2[0] + '-left-' + t_2[1]] = eachValue_2[3] ||
-                eachValue_2[1] ||
-                eachValue_2[0];
+            expanded_2[t_2[0] + '-right-' + t_2[1]] = eachValue_2[1] || eachValue_2[0];
+            expanded_2[t_2[0] + '-bottom-' + t_2[1]] = eachValue_2[2] || eachValue_2[0];
+            expanded_2[t_2[0] + '-left-' + t_2[1]] = eachValue_2[3] || eachValue_2[1] || eachValue_2[0];
             $.extend(style, expanded_2);
             delete style[prop_2];
         }
@@ -262,13 +247,9 @@
             var eachValue_3 = value_3.split(' ');
 
             expanded_3[t_3[0] + '-top-left-' + t_3[1]] = eachValue_3[0];
-            expanded_3[t_3[0] + '-top-right-' + t_3[1]] = eachValue_3[1] ||
-                eachValue_3[0];
-            expanded_3[t_3[0] + '-bottom-right-' + t_3[1]] = eachValue_3[2] ||
-                eachValue_3[0];
-            expanded_3[t_3[0] + '-bottom-left-' + t_3[1]] = eachValue_3[3] ||
-                eachValue_3[1] ||
-                eachValue_3[0];
+            expanded_3[t_3[0] + '-top-right-' + t_3[1]] = eachValue_3[1] || eachValue_3[0];
+            expanded_3[t_3[0] + '-bottom-right-' + t_3[1]] = eachValue_3[2] || eachValue_3[0];
+            expanded_3[t_3[0] + '-bottom-left-' + t_3[1]] = eachValue_3[3] || eachValue_3[1] || eachValue_3[0];
             $.extend(style, expanded_3);
             delete style[prop_3];
         }
@@ -291,10 +272,10 @@
     /**
      * create wheelSpy target
      * @constructor
-     * @param {Element} elem: target element
+     * @param {jQuery} elem: target element
      */
-    var CreateSpy = function (elem) {
-        this.target = elem[0];
+    var CreateSpy = function ($elem) {
+        this.target = $elem;
         //this.index = queue.length;
         this.keyframes = [];
 
@@ -353,20 +334,20 @@
             keyframe.percent = percent; // log percent
 
             //console.log(percent);
-            var target = this.target;
-            var nextFrame = getStyle(target, keyframe.beginStyle, keyframe.finalStyle, percent);
+            var $target = this.target;
+            var nextFrame = getStyle($target, keyframe.beginStyle, keyframe.finalStyle, percent);
             //console.log(keyframe.beginStyle, nextFrame);
 
             if (config.useTweenLite) {
-                tween.to(target, duration / 500, {
+                tween.to($target, duration / 500, {
                     css: nextFrame
                 });
             } else {
-                $(target).css(nextFrame);
+                $target.css(nextFrame);
             }
 
             if (typeof keyframe.steps === 'function') {
-                keyframe.steps.call(target, percent);
+                keyframe.steps.call($target, percent);
             }
         },
         /**
@@ -376,11 +357,11 @@
          */
         fix: function (keyframe, isScrollDown) {
             //console.log('fixing ' + isScrollDown);
-            var target = this.target;
+            var $target = this.target;
             //tween.killTweensOf(this.target);
             if ($.isEmptyObject(keyframe.beginStyle)) {
                 // get begin style first
-                getStyle(target, keyframe.beginStyle, keyframe.finalStyle, 0);
+                getStyle($target, keyframe.beginStyle, keyframe.finalStyle, 0);
             }
             var duration, style;
             //console.log(keyframe.percent);
@@ -396,15 +377,15 @@
             //keyframe.percent = Number(isScrollDown);
             //console.log(this.target);
             if (config.useTweenLite) {
-                tween.to(target, duration, {
+                tween.to($target, duration, {
                     css: style
                 });
             } else {
-                $(target).css(style);
+                $target.css(style);
             }
 
             if (typeof keyframe.steps === 'function') {
-                keyframe.steps.call(target, keyframe.percent);
+                keyframe.steps.call($target, keyframe.percent);
             }
         }
     };
