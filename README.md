@@ -94,6 +94,7 @@ Explanation of the config fields:
 
 | Name          | Explanation                                           |
 | ------------- | ----------------------------------------------------- |
+| throttle      | event capture frequency, default is 16(ms)            |
 | wheelSpeed    | a number config mouse wheel speed, default is 1       |
 | touchSpeed    | a number config touch move speed, default is 1        |
 | keyboardSpeed | a number config speed on keyboard press, default is 1 |

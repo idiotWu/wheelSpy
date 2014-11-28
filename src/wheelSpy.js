@@ -116,17 +116,17 @@
 
             //console.log(value_1, value_2);
 
-            var scale = value_1 / value_2;
-            //console.log(scale);
+            var ratio = value_1 / value_2;
+            //console.log(ratio);
 
-            if (isNaN(scale)) {
+            if (isNaN(ratio)) {
                 console.log($elem);
                 throw new Error('error get value of ' + prop);
             }
-            //console.log(scale);
+            //console.log(ratio);
             //console.log(prop, propValue);
 
-            return parseFloat(propValue) * scale + finalUnit;
+            return parseFloat(propValue) * ratio + finalUnit;
         };
 
         /**
@@ -263,6 +263,7 @@
     var queue = [];
 
     var config = {
+        throttle: 16,
         wheelSpeed: 1,
         touchSpeed: 1,
         keyboardSpeed: 1,
@@ -431,33 +432,41 @@
         }
     };
 
-    (function () {
+    (function (config) {
         // mousewheel event handler
-        var timer, timeStamp;
+        var timer, timeStamp, mustRun;
+        var delta = 0;
         var wheelListener = function (event) {
             event.preventDefault();
+            clearTimeout(mustRun);
 
             if (!queue.length || preventAction) {
                 return;
             }
             //var currentTime = new Date().getTime();
+            var orgEvent = event.originalEvent;
+            delta += orgEvent.wheelDelta ? -orgEvent.wheelDelta / 120 : orgEvent.detail / 3 /* FF */ ;
+
             var currentTime = event.timeStamp || (new Date).getTime();
             if (!timeStamp) {
                 timeStamp = currentTime;
                 return;
             }
+
             var duration = currentTime - timeStamp;
-            if (duration < 16) {
+            if (duration < config.throttle) {
+                mustRun = setTimeout(function () {
+                    var frame = currentFrame + delta * config.wheelSpeed * 10;
+                    delta = 0;
+                    renderFrame(frame, 100);
+                }, 100);
                 return;
             }
+
             timeStamp = currentTime;
 
-            var orgEvent = event.originalEvent;
-            var delta = orgEvent.wheelDelta ?
-                -orgEvent.wheelDelta / 120 :
-                orgEvent.detail / 3 /* FF */ ;
-
             var frame = currentFrame + delta * config.wheelSpeed * 10;
+            delta = 0;
 
             renderFrame(frame, duration);
 
@@ -471,11 +480,11 @@
             'mousewheel' : 'DOMMouseScroll';
         $(document).on(mouseWheelEvent, wheelListener);
         //document.addEventListener(mouseWheelEvent, wheelListener, false);
-    })();
+    })(config);
 
-    (function () {
+    (function (config) {
         // touch event handler
-        var startTouchPos, startTime, currentTouchPos, currentTime;
+        var startTouchPos, startTime, currentTouchPos, currentTime, mustRun;
 
         var getPageY = function (event) {
             event.preventDefault();
@@ -496,9 +505,11 @@
         };
 
         var move = function (event) {
+            clearTimeout(mustRun);
             if (!startTouchPos || preventAction) {
                 return;
             }
+
             var pos = getPageY(event);
             var changeValue = currentTouchPos - pos; // opposite direction
             currentTouchPos = pos;
@@ -506,9 +517,14 @@
             //var time = new Date().getTime();
             var time = event.timeStamp || (new Date).getTime();
             var duration = time - currentTime;
-            if (duration < 16) {
+            if (duration < config.throttle) {
+                mustRun = setTimeout(function () {
+                    var frame = currentFrame + changeValue * config.touchSpeed;
+                    renderFrame(frame, 100);
+                }, 100);
                 return;
             }
+
             currentTime = time;
 
             var frame = currentFrame + changeValue * config.touchSpeed;
@@ -552,7 +568,7 @@
         //document.addEventListener(touchStartEvent, start, false);
         //document.addEventListener(touchMoveEvent, move, false);
         //document.addEventListener(touchStopEvent, stop, false);
-    })();
+    })(config);
 
     $(document).on('keydown', function (event) {
         // key press event
