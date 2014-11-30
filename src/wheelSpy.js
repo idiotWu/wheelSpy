@@ -71,7 +71,7 @@
          */
         var getOneUnitValue = function ($parent, prop, unit) {
             var $div= $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
-            $div.appendTo($parent).css(prop, 12 +unit);
+            $div.appendTo($parent[0]).css(prop, 12 +unit);
             var value = parseFloat($div.css(prop));
             $div.remove();
             return value;
@@ -622,8 +622,8 @@
     wheelSpy.scrollTo = (function () {
         var _queue = [];
 
-        var easeOutCirc = function (t, b, c, d) {
-            return c * Math.sqrt(1 - (t = t / d - 1) * t) + b;
+        var easeOutCubic = function (t, b, c, d) {
+            return c * ((t = t / d - 1) * t * t + 1) + b;
         };
 
         var createAnime = function (changeValue, duration) {
@@ -631,7 +631,7 @@
             var anime = [];
 
             for (var i = 1; i <= frames; i++) {
-                anime.push(easeOutCirc(i, currentFrame, changeValue, frames));
+                anime.push(easeOutCubic(i, currentFrame, changeValue, frames));
             }
             //console.log(anime);
 
