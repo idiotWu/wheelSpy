@@ -5,6 +5,7 @@
  */
 
 (function (window) {
+    'use strict';
     var lastTime = 0;
     var vendors = ['webkit', 'moz'];
     for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
@@ -35,7 +36,6 @@
     'use strict';
 
     var getStyle = (function () {
-
         /**
          * get css property value and unit
          * @param {String} value: css property value string
@@ -267,7 +267,7 @@
         wheelSpeed: 1,
         touchSpeed: 1,
         keyboardSpeed: 1,
-        useTweenLite: true
+        useTweenLite: typeof tween === 'function'
     };
 
     /**
@@ -341,7 +341,8 @@
 
             if (config.useTweenLite) {
                 tween.to($target, duration / 500, {
-                    css: nextFrame
+                    css: nextFrame,
+                    ease: Linear.easeNone
                 });
             } else {
                 $target.css(nextFrame);
@@ -379,7 +380,8 @@
             //console.log(this.target);
             if (config.useTweenLite) {
                 tween.to($target, duration, {
-                    css: style
+                    css: style,
+                    ease: Linear.easeNone
                 });
             } else {
                 $target.css(style);
