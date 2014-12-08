@@ -489,8 +489,6 @@
         var startTouchPos, startTime, currentTouchPos, currentTime, mustRun;
 
         var getPageY = function (event) {
-            event.preventDefault();
-
             var data = event.originalEvent.touches ?
                        event.originalEvent.touches[0] :
                        event;
@@ -581,12 +579,12 @@
         if (keyCode === 40) {
             // down key
             event.preventDefault();
-            renderFrame(currentFrame += config.keyboardSpeed * 2, 30);
+            renderFrame(currentFrame + config.keyboardSpeed * 2, 30);
         }
         if (keyCode === 38) {
             // up key
             event.preventDefault();
-            renderFrame(currentFrame -= config.keyboardSpeed * 2, 30);
+            renderFrame(currentFrame - config.keyboardSpeed * 2, 30);
         }
     });
 
