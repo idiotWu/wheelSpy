@@ -505,6 +505,8 @@
         };
 
         var move = function (event) {
+            event.preventDefault();
+
             clearTimeout(mustRun);
             if (!startTouchPos || preventAction) {
                 return;
