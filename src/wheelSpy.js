@@ -42,8 +42,8 @@
          *
          * @return {Object | null}: object contains value and unit
          */
+        var UNIT_VALUE_PATTERN = /([\d\.\-]+)([^\d]+)/;
         var getUnitValue = function (value) {
-            var UNIT_VALUE_PATTERN = /([\d\.\-]+)([^\d]+)/;
             if (value === undefined) {
                 return null;
             }
@@ -54,7 +54,6 @@
                 };
             }
             if (!UNIT_VALUE_PATTERN.test(value)) {
-                //console.log(value);
                 throw new Error('Bad value:' + value);
             }
             return {
@@ -70,8 +69,8 @@
          * @param {String} unit: unit to apply
          */
         var getOneUnitValue = function ($parent, prop, unit) {
-            var $div= $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
-            $div.appendTo($parent[0]).css(prop, 12 +unit);
+            var $div = $('<div style="position: absolute;border-style: solid;visibility: hidden;"></div>');
+            $div.appendTo($parent[0]).css(prop, 12 + unit);
             var value = parseFloat($div.css(prop));
             $div.remove();
             return value;
@@ -81,7 +80,7 @@
          * @param {jQuery} $elem: target element
          * @param {String} prop: css property name
          * @param {String} finalUnit: unit to convert to
-         * @param {String} [propValue]: value of the property,
+         * @param {Number} [propValue]: value of the property,
          *                              will call $(elem).css(prop) if undefined
          *
          * @return {String} converted property value
@@ -368,7 +367,7 @@
             var duration, style;
             //console.log(keyframe.percent);
             if (isScrollDown) {
-                duration = Math.max(1- keyframe.percent, 0.5);
+                duration = Math.max(1 - keyframe.percent, 0.5);
                 style = keyframe.finalStyle;
                 keyframe.percent = 1;
             } else {
@@ -490,8 +489,8 @@
 
         var getPageY = function (event) {
             var data = event.originalEvent.touches ?
-                       event.originalEvent.touches[0] :
-                       event;
+                event.originalEvent.touches[0] :
+                event;
             return data.pageY;
         };
 
